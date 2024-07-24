@@ -53,18 +53,49 @@ function getStartPoints(){
 }
 
 // Determines if it should show points/sec
-function canGenPoints(){
-	return true
+let PP = false
+
+function canGenPoints() {
+  let PP = localStorage.getItem('PP') === 'true';
+  if (player.w.points >= 1 || PP) {
+    localStorage.setItem('PP', 'true');
+    return true;
+  }
+  return false;
+}
+// Calculate points/sec!
+
+function challengeEffect(){
+  let Effect = new Decimal(1)
+  if (inChallenge('m', 21)) {
+    Effect = format(Effect.mul(Math.sin(getResetGain('w').add(player.w.points))))
+    return "<h5>You are currently inside the Placeholder 1. <br> If you win right now, your point production will be multiplied by </h5>" + Effect
+  }
+  if (inChallenge('m', 31)) {
+    return "<h5>You are currently inside the Endless Void</h5>" + "You have " + player.w.points + " wins and you will gain " + getResetGain('w') + " wins on reset"
+  }
+  else{
+    return false
+  }
 }
 
-// Calculate points/sec!
+function calculateAch32Reward() {
+  let reward = new Decimal(1)
+  if (hasAchievement('A', 31)) reward = reward.add(0.5)
+  if (hasAchievement('A', 32)) reward = reward.add(0.5)
+  if (hasAchievement('A', 33)) reward = reward.add(0.5)
+  if (hasAchievement('A', 34)) reward = reward.add(0.5)
+  if (hasAchievement('A', 35)) reward = reward.add(0.5)
+  return reward
+}
+
 function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
-	
-
 	let gain = new Decimal(1)
+  if (hasAchievement('A',14)) gain = gain.mul(1.1)
 	if (hasMilestone('h',1)) gain = gain.mul(2)
+  if (hasAchievement('A',32)) gain = gain.mul(calculateAch32Reward())
 	if (hasAchievement('A',33)) {
 	if(inChallenge("m",13) ||inChallenge("m",12) ||inChallenge("m",11) ||inChallenge("m",21) ||inChallenge("m",22) ||inChallenge("m",23) ||inChallenge("m",31)){
 		gain = gain.mul(2)}}
@@ -73,7 +104,7 @@ function getPointGen() {
 		gain = gain.mul(2)}}
 	if (hasUpgrade('w', 14)) gain = gain.times(upgradeEffect('w',14))
 	if (hasUpgrade('w', 11)) gain = gain.times(upgradeEffect('w',11))
-	if (hasUpgrade('w', 21)) gain = gain.times(4)
+	if (hasUpgrade('w', 21)) gain = gain.times(upgradeEffect('w',21))
 	if (hasUpgrade('w', 31)) gain = gain.times(8)
 	if (hasUpgrade('w', 12)) gain = gain.times(upgradeEffect('w', 12))
 	if (hasUpgrade('w', 22)) gain = gain.times(upgradeEffect('w', 22))
@@ -106,15 +137,16 @@ function getPointGen() {
 	}
 	return gain
 }
+
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
 var displayThings = [
-    
+  challengeEffect
+  
 ]
-
 // Determines when the game "ends"
 function isEndgame() {
 	return player.points.gte(new Decimal("e280000000"))

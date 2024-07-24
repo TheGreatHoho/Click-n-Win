@@ -388,6 +388,7 @@ function hardReset(resetOptions) {
 	player = null
 	if(resetOptions) options = null
 	save(true);
+  localStorage.setItem('PP', 'false');
 	window.location.reload();
 }
 
