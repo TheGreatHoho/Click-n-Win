@@ -324,9 +324,11 @@ addLayer("A", {
     },
     43: {
       name: "Items are useless",
-      tooltip: "Perform a heavenly reset without buying any items except sharp shard.<h5>Reward: Aliensar<h5>",
+      tooltip: "Reach 30k wins without buying any items except sharp shard.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(1000)
+        if (getBuyableAmount('m', 11).eq(0) && getBuyableAmount('m', 12).eq(0) && getBuyableAmount('m', 22).eq(0) && getBuyableAmount('m', 61).eq(0) && getBuyableAmount('m', 62).eq(0) && getBuyableAmount('m', 63).eq(0)) {
+          return player.w.points.gte(30000)
+        }
       },
       style() {
         return {
@@ -385,6 +387,7 @@ addLayer("A", {
           "margin": "0.5px"
         }
       },
+      unlocked: false,
     },
 },
   tabFormat: {
@@ -742,18 +745,22 @@ doReset(resettingLayer) {
         11: {
             title: "Booster",
             description () {
-              if (inChallenge("m", 11)||inChallenge("m",12)||inChallenge("m",31)) {          
-                return "This upgrade cannot be bought inside of this challenge."
-              } else {
-                if (getBuyableAmount('m',11).gt(0) ) { 
-                  return "Boosts your point production by " + format(upgradeEffect(this.layer,this.id)) + "x"
-                  
-              } else {
-                  return "Doubles your point gain." 
-              }
-              }
+                if (inChallenge("m", 11)||inChallenge("m",12)||inChallenge("m",31)) {          
+                  return "This upgrade cannot be bought inside of this challenge."
+                } else {
+                  if (getBuyableAmount('m',11).gt(0) ) { 
+                    return "Boosts your point production by " + format(upgradeEffect(this.layer,this.id)) + "x"
+                    
+                } else {
+                    return "Doubles your point gain." 
+                }
+                }
+
             },
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',11) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m", 11)||inChallenge("m",12)||inChallenge("m",31)) {
                 return new Decimal("e999")
                 
@@ -763,6 +770,7 @@ doReset(resettingLayer) {
             },          
             style() {
                if (hasUpgrade('w',11)) return {background: "#ECF8F9"}
+               if(inChallenge('h', 11) && getClickableState('h',11) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
               },
             effect() {
               effect = new Decimal(buyableEffect('m', 11).mul(2))
@@ -779,6 +787,9 @@ doReset(resettingLayer) {
             }
             },
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',12) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m",12)||inChallenge("m",31)) {
                 return new Decimal("e999")
                 
@@ -805,13 +816,20 @@ doReset(resettingLayer) {
             },
             style() {
                 if (hasUpgrade('w',12)) return {background: "#068DA9"}
+                if(inChallenge('h', 11) && getClickableState('h',12) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
                }
             },
             
         13: {
             title: "Divisor",
             description: "Makes it easier to win. (Based on how many points you have)",
-            cost: new Decimal(5),
+            cost(){
+              if(inChallenge('h', 11) && getClickableState('h',13) == 1) {
+                return new Decimal("1ee308")
+              }
+              else return new Decimal(5)
+            
+            },
             effect() {
               effect = new Decimal(player.points.add(1))
               effect = effect.sqrt(effect)
@@ -831,13 +849,20 @@ doReset(resettingLayer) {
             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "÷"},
             style() {
               if (hasUpgrade('w',13)) return {background: "#E55807"}
+              if(inChallenge('h', 11) && getClickableState('h',13) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
              }
         },
         
         14: {
           title: "Empowerer",
           description: "Empowers your production based on your magical shards.",
-          cost: new Decimal(15),
+          cost(){
+            if(inChallenge('h', 11) && getClickableState('h',14) == 1) {
+              return new Decimal("1ee308")
+            }
+            else return new Decimal(15)
+          
+          },
           effect() {
             let effect = new Decimal(player.m.points)
             effect = effect.add(3)
@@ -855,6 +880,7 @@ doReset(resettingLayer) {
          },
          style() {
           if (hasUpgrade('w',14)) return {background: "#7E1717"}
+          if(inChallenge('h', 11) && getClickableState('h',14) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
          }
          
          
@@ -872,6 +898,9 @@ doReset(resettingLayer) {
             }
             },
             cost() { 
+              if(inChallenge('h', 11) && getClickableState('h',21) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m", 11)||inChallenge("m",12)||inChallenge("m",31)) {
                 return new Decimal("e999")
               }
@@ -899,6 +928,7 @@ doReset(resettingLayer) {
             },
             style() {
                 if (hasUpgrade('w',21)) return {background: "#ECF8F9"}
+                if(inChallenge('h', 11) && getClickableState('h',21) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
             },
             effect() {
               let Effect = new Decimal(4)
@@ -919,6 +949,9 @@ doReset(resettingLayer) {
             }
             },
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',22) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m", 12)||inChallenge("m",31)) {
                 return new Decimal("e999")
               } else {
@@ -955,12 +988,16 @@ doReset(resettingLayer) {
             },
             style() {
                 if (hasUpgrade('w',22)) return {background: "#068DA9"}
+                if(inChallenge('h', 11) && getClickableState('h',22) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
                }
         },
         23: {
             title: "Super Divisor",
             description: "What, you want even easier wins? Sure, you can have it.",
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',23) == 1) {
+                return new Decimal("1ee308")
+              }
                 if (getBuyableAmount('m',21) > 0 ) {
                     return new Decimal(55).minus(buyableEffect('m',21))
                 } else {
@@ -993,12 +1030,16 @@ doReset(resettingLayer) {
             },
             style() {
               if (hasUpgrade('w',23)) return {background: "#E55807"}
+              if(inChallenge('h', 11) && getClickableState('h',23) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
              }
         },
         24: {
           title: "Mighty Empowerer",
           description: "Empowers your accelerators based on your wins.",
           cost() {
+            if(inChallenge('h', 11) && getClickableState('h',24) == 1) {
+              return new Decimal("1ee308")
+            }
             return new Decimal(80)
           },
           effect() {
@@ -1020,6 +1061,7 @@ doReset(resettingLayer) {
          },
          style() {
           if (hasUpgrade('w',24)) return {background: "#7E1717"}
+          if(inChallenge('h', 11) && getClickableState('h',23) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
          }
         
         },
@@ -1033,6 +1075,9 @@ doReset(resettingLayer) {
             }
             },
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',31) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m", 11)||inChallenge("m",12)||inChallenge("m",31)) {
                 return new Decimal("e999")
                 
@@ -1054,6 +1099,7 @@ doReset(resettingLayer) {
             },
             style() {
                 if (hasUpgrade('w',31)) return {background: "#ECF8F9"}
+                if(inChallenge('h', 11) && getClickableState('h',31) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
                }
         },
         32: {
@@ -1066,6 +1112,9 @@ doReset(resettingLayer) {
             }
             },
             cost() {
+              if(inChallenge('h', 11) && getClickableState('h',32) == 1) {
+                return new Decimal("1ee308")
+              }
               if (inChallenge("m", 12)||inChallenge("m",31)) {
                 return new Decimal("e999")
               } else {
@@ -1101,12 +1150,19 @@ doReset(resettingLayer) {
             },
             style() {
                 if (hasUpgrade('w',32)) return {background: "#068DA9"}
+                if(inChallenge('h', 11) && getClickableState('h',32) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
                }
         },
         33: {
             title: "Ultra Divisor",
             description: "Winning has never been this easy before.",
-            cost: new Decimal(500),
+            cost(){
+              if(inChallenge('h', 11) && getClickableState('h',33) == 1) {
+                return new Decimal("1ee308")
+              }
+              else return new Decimal(500)
+            
+            },
             effect() {
                 effect = new Decimal(player.points.add(1).pow(1.1))
                 effect = effect.log10(effect).add(1.5)
@@ -1128,12 +1184,19 @@ doReset(resettingLayer) {
             },
             style() {
               if (hasUpgrade('w',33)) return {background: "#E55807"}
+              if(inChallenge('h', 11) && getClickableState('h',33) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
              }
         },
         34: {
           title: "True Empowerer",
           description: "Empowers your divisors based on your points.",
-          cost: new Decimal(1500),
+          cost(){
+            if(inChallenge('h', 11) && getClickableState('h',34) == 1) {
+              return new Decimal("1ee308")
+            }
+            else return new Decimal(1500)
+          
+          },
           effect() {
             if (hasUpgrade(this.layer,this.id)) {
               let effect = new Decimal(player.points)
@@ -1162,6 +1225,7 @@ doReset(resettingLayer) {
          },
          style() {
           if (hasUpgrade('w',34)) return {background: "#7E1717"}
+          if(inChallenge('h', 11) && getClickableState('h',34) == 1) return {"background": "black", "color": "white",  "text-decoration": "line-through"}
          }
 
         },
@@ -1306,7 +1370,7 @@ addLayer("m", {
             ["display-text",
             function() {
             if(hasChallenge('m', 31)) {
-              return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>Endless Void goal scaling gets stronger after 600 wins.<br>'
+              return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>Endless Void goal scaling gets stronger after 20 completions.<br>'
             }
             return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>'
             },
@@ -1376,10 +1440,6 @@ addLayer("m", {
     let keptChallenges = {};
     if (hasMilestone('h', 5)) keptChallenges[11] = challengeCompletions('m', 11);
     if (hasMilestone('h', 6)) keptChallenges[21] = challengeCompletions('m', 21);
-    if (hasMilestone('h', 9)) keptChallenges[12] = challengeCompletions('m', 12);
-    if (hasMilestone('h', 9)) keptChallenges[13] = challengeCompletions('m', 13);
-    if (hasMilestone('h', 9)) keptChallenges[22] = challengeCompletions('m', 12);
-    if (hasMilestone('h', 9)) keptChallenges[23] = challengeCompletions('m', 23);
     let keptBuyables = {};
     if (hasMilestone('h', 1)) keptBuyables[21] = getBuyableAmount('m', 21);
 
@@ -1657,11 +1717,11 @@ addLayer("m", {
           let power = new Decimal(30)
           if (hasAchievement('A', 31)) power = power.sub(1)
           if (hasMilestone('h',8)) power = power.sub(4)
-          if (hasMilestone('h',11)) power = power.sub(3)
+          if (hasMilestone('h',10)) power = power.sub(3)
           let calc = new Decimal(base.add(power.mul(x)))
-          if(calc.gte(600)){
-            power = power.add(50)
-            calc = new Decimal(base.add(power.mul(x)))
+          if(x.gte(20)){
+            power = power.mul(x.div(10))
+            calc = calc.add(power.mul(x.sub(19)))
           } 
           let goal = calc
           
@@ -2035,17 +2095,14 @@ addLayer("m", {
             }
           },
           22: {
-            purchaseLimit: 999,
+            purchaseLimit: 100,
             title: "Shard of the Void",
-            cost(x) {
+            cost() {
               let Calculation = new Decimal("e15")
-              if (x < 30) {
-                let PowerI = new Decimal(5)
-                Calculation = new Decimal("e15").mul(Decimal.pow(PowerI, x.pow(1)))
-              } else {
-                let PowerI = new Decimal(6)
-                Calculation = new Decimal("e15").mul(Decimal.pow(PowerI, x.pow(1)))
-              }
+              let x = new Decimal(getBuyableAmount(this.layer, this.id))
+              let y = new Decimal("1e15")
+              Calculation = Calculation.mul(y.pow(x))
+              
               if (getBuyableAmount('m',61) > 0) {
                 Calculation = Calculation.divide(buyableEffect('m',61))
                 return Calculation
@@ -2054,16 +2111,24 @@ addLayer("m", {
               }
           },
             display() {
-              return `Wins provide a boost to the point production.<br>
+              if (getBuyableAmount(this.layer,this.id) >= 100) {
+                return `Wins provide a boost to the point production.<br>
+              x${format(tmp[this.layer].buyables[this.id].effect)} to Point Production</b><br>
+          <h2>Maximum Amount Reached</h2>
+          <br> ${format(getBuyableAmount('m',22))} /100 Bought`
+              } else {
+                return `Wins provide a boost to the point production.<br>
               x${format(tmp[this.layer].buyables[this.id].effect)} to Point Production</b><br>
           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-          <br> ${format(getBuyableAmount('m',22))} /999 Bought`
+          <br> ${format(getBuyableAmount('m',22))} /100 Bought`
+              }
+              
             },
             canAfford() {
               return player.m.points.gte(this.cost())
             },
             style() {
-              if (this.canAfford()||getBuyableAmount("m",62) == 999) return {
+              if (this.canAfford()||getBuyableAmount("m",22) >= 100) return {
                 "width": "250px",
                 "height": " 125px",
                 "border-radius": "10px",
@@ -2341,11 +2406,21 @@ addLayer("h", {
     baseResource: "wins", // Name of resource prestige is based on
     baseAmount() {return player.w.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.75,// Prestige currency exponent
+    exponent: 1.05,// Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
         mult = mult.mul(1)
-        if (hasUpgrade('w',43)) mult = mult.mul(upgradeEffect('w',43))
+        if (hasUpgrade('w',43)) mult = mult.mul(upgradeEffect('w',43)) 
+
+        let sacrifice = new Decimal(0)
+        for (let row = 1; row <= 3; row++) {
+        for (let col = 1; col <= 4; col++) {
+        sacrifice = sacrifice.add(getClickableState(this.layer, row * 10 + col));  //Sacrifice calculation
+        }}
+        sacrifice = sacrifice.add(1).pow(2.2)
+        if (inChallenge('h',11)) mult = mult.mul(sacrifice)
+
+
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -2426,7 +2501,37 @@ addLayer("h", {
           else return false
         },
       },
-    
+      "Sacrifice": {
+        unlocked() {
+          if (hasMilestone('h', 9)) return true
+          else return false
+          },
+          content: [
+            ["display-text",
+              function() { return 'Sacrificed upgrades can not be bought in the next heavenly reset.<br>Below you can choose the upgrades you desire to be sacrificed and click the sacrifice button to start a new heavenly reset.<br>Respec button resets the sacrifices and performs a heavenly reset without any rewards.<br><br>' },
+              { "color": "grey", "font-size": "13px"}],
+              "blank",
+            ["display-text",
+              function() { 
+                let sacrifice = new Decimal(0)
+                for (let row = 1; row <= 3; row++) {
+                  for (let col = 1; col <= 4; col++) {
+                      sacrifice = sacrifice.add(getClickableState(this.layer, row * 10 + col));
+                  }
+              }
+              sacrifice = sacrifice.add(1).pow(2.2)
+               if(inChallenge(this.layer, 11)) return 'Sacrificed upgrades are boosting pure energy gain by ' + format(sacrifice) + 'x.'
+                else return 'You have selected ' + Math.round(sacrifice.root(2.2).sub(1)) + ' upgrades for sacrifice.<br>Upon a heavenly reset this would grant a ' + format(sacrifice) + 'x boost to pure energy gain.'
+
+              },
+              { "color": "white", "font-size": "16px"}],
+              "blank",
+            "clickables",
+            
+          ],
+
+        
+      },
       "Ancient Tree": {
         unlocked: false,
           content: [
@@ -3009,11 +3114,11 @@ milestones: {
     }  
   },
   7: {
-    requirementDescription: "15 Total Pure Energy",
+    requirementDescription: "10 Total Pure Energy",
     effectDescription: `Endless Void scaling is reduced by 5.<br>
     Goal formula for x completions: 70+(x.29) => 70+(x.25)
     `,
-    done() { return player.h.total.gte(15) },
+    done() { return player.h.total.gte(10) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
@@ -3039,9 +3144,9 @@ milestones: {
     }  
   },
   8: {
-    requirementDescription: "20 Total Pure Energy",
+    requirementDescription: "15 Total Pure Energy",
     effectDescription: `Pure energy's effect on magical shard gain is slightly better.`,
-    done() { return player.h.total.gte(20) },
+    done() { return player.h.total.gte(15) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
@@ -3068,7 +3173,7 @@ milestones: {
   },
   9: {
     requirementDescription: "25 Total Pure Energy",
-    effectDescription: "You start every heavenly reset with the first 6 challenges completed.",
+    effectDescription: "Unlock sacrifice.",
     done() { return player.h.total.gte(25) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
@@ -3095,9 +3200,9 @@ milestones: {
     }  
   },
   10: {
-    requirementDescription: "30 Total Pure Energy",
-    effectDescription: "Unlock sacrifice. (not implemented)",
-    done() { return player.h.total.gte(30) },
+    requirementDescription: "100 Total Pure Energy",
+    effectDescription: "Endless Void scaling is reduced further. <br> Goal formula for x completions: 70+(x.25) => 70+(x.22)",
+    done() { return player.h.total.gte(100) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
@@ -3123,37 +3228,9 @@ milestones: {
     }  
   },
   11: {
-    requirementDescription: "100 Total Pure Energy",
-    effectDescription: "Endless Void scaling is reduced further. <br> Goal formula for x completions: 70+(x.25) => 70+(x.22)",
-    done() { return player.h.total.gte(200) },
-    style(){
-    if (hasMilestone(this.layer,this.id)) {
-      return {"width": "450px",
-      "height": " 105px",
-      "border-radius": "10px",
-      "border": "0px",
-      "margin": "5px",
-      "text-shadow": "0px 0px 10px #000000",
-      "color": "white",
-      "background-color": "#B31312"
-    }
-    }
-     else {
-      return {"width": "450px",
-      "height": " 105px",
-      "border-radius": "10px",
-      "border": "0px",
-      "margin": "5px",
-      "text-shadow": "0px 0px 10px #000000",
-      "color": "white"}
-      
-      }
-    }  
-  },
-  12: {
-    requirementDescription: "3000 Total Pure Energy",
+    requirementDescription: "1e10 Total Pure Energy",
     effectDescription: "Unlock the Ancient Tree",
-    done() { return player.h.total.gte(3000) },
+    done() { return player.h.total.gte("1e10") },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
@@ -3180,9 +3257,344 @@ milestones: {
   },
 
 },
+clickables: {
+  11: {
+    display() {return "<h3>Booster<h/3>"},
+    canClick() {
+      return true
+    }, 
+    onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+21: {
+  display() {return "<h3>Super Booster<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+31: {
+  display() {return "<h3>Ultra Booster<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+12: {
+  display() {return "<h3>Accelerator<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+22: {
+  display() {return "<h3>Super Accelerator<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+32: {
+  display() {return "<h3>Ultra Accelerator<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+14: {
+  display() {return "<h3>Empowerer<h/3>"},
+  canClick() {
+    return true
+  },
 
+  onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+24: {
+  display() {return "<h3>Mighty Empowerer<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+34: {
+  display() {return "<h3>True Empowerer<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+13: {
+  display() {return "<h3>Divisor<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+23: {
+  display() {return "<h3>Super Divisor<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+    if (inChallenge(this.layer, 11)) {
+      alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+      return false
+    } 
+    else {
+      if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+      else setClickableState(this.layer, this.id, 1)      
+    }
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+33: {
+  display() {return "<h3>Ultra Divisor<h/3>"},
+  canClick() {
+    return true
+  },
+  
+  onClick(){
+      if (inChallenge(this.layer, 11)) {
+        alert("You need to respec your sacrifices or complete your current heavenly reset in order to do this!")
+        return false
+      } 
+      else {
+        if (getClickableState(this.layer, this.id) == 1) setClickableState(this.layer, this.id, 0)
+        else setClickableState(this.layer, this.id, 1)      
+      }
+      
+    },
+    style() {
+    if (getClickableState(this.layer, this.id) == 1) return {
+      "background-color": "white"
+    }
+  }
+},
+41: {
+  display() {return '<h2>RESPEC<h/2>'},
+  style() {
+    return {
+        "width": "170px",
+        "height": " 100px",
+        "border-radius": "15px",
+        "border": "0px",
+        "margin": "5px",
+        "text-shadow": "0px 0px 10px #000000",
+        "color": "#FFFFFF",
+        "background-color": "rgb(179, 19, 18)" ,
+        "margin-right": "40px",
+        "margin-top": "50px",
+    }
+  },
+  canClick() {
+    return true
+  },
+  onClick(){
+    setClickableState(this.layer, 11, 0)
+    setClickableState(this.layer, 12, 0)
+    setClickableState(this.layer, 13, 0)
+    setClickableState(this.layer, 14, 0)
+    setClickableState(this.layer, 21, 0)
+    setClickableState(this.layer, 22, 0)
+    setClickableState(this.layer, 23, 0)
+    setClickableState(this.layer, 24, 0)
+    setClickableState(this.layer, 31, 0)
+    setClickableState(this.layer, 32, 0)
+    setClickableState(this.layer, 33, 0)
+    setClickableState(this.layer, 34, 0)
+    if (inChallenge(this.layer, 11)) startChallenge(this.layer, 11)
+    else return false
+  }
+},
+42: {
+  display() {return '<h2>SACRIFICE<h/2>'},
+  style() {
+    return {
+        "width": "170px",
+        "height": " 100px",
+        "border-radius": "15px",
+        "border": "0px",
+        "margin": "5px",
+        "text-shadow": "0px 0px 10px #000000",
+        "color": "#FFFFFF",
+        "background-color": "rgb(179, 19, 18)" ,
+        "margin-left": "40px",
+        "margin-top": "50px",
+    }
+    
+  },
+  canClick() {
+    return true
+  },
+  onClick(){
+    if (!inChallenge(this.layer, 11)) startChallenge(this.layer, 11)
+    else return false
+  }
+}
 
-})
+},
+challenges: {
+  11: {
+    name: "Sacrifice",
+    canComplete: function() {return player.h.points.gte("1e999999999999999999")},
+    
+    
+}, 
+}
+}
+)
 
 
 

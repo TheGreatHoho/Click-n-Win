@@ -19,6 +19,9 @@ let VERSION = {
 
 let changelog = `<h1>Changelog:</h1><br>
       <br><br>
+        <h3>v0.21</h3><br>
+      - Added sacrifice.<br>
+      <br><br>
          <h3>v0.2</h3><br>
 		- Rebalanced the whole game.<br>
 		- Fixed a lot of bugs.<br>
