@@ -3144,9 +3144,9 @@ milestones: {
     }  
   },
   8: {
-    requirementDescription: "15 Total Pure Energy",
+    requirementDescription: "12 Total Pure Energy",
     effectDescription: `Pure energy's effect on magical shard gain is slightly better.`,
-    done() { return player.h.total.gte(15) },
+    done() { return player.h.total.gte(12) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
@@ -3172,9 +3172,9 @@ milestones: {
     }  
   },
   9: {
-    requirementDescription: "25 Total Pure Energy",
+    requirementDescription: "15 Total Pure Energy",
     effectDescription: "Unlock sacrifice.",
-    done() { return player.h.total.gte(25) },
+    done() { return player.h.total.gte(15) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
