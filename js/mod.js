@@ -13,11 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Heaven's Gates"	,
+	num: "0.2",
+	name: "Rebalancing"	,
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+      <br><br>
+         <h3>v0.2</h3><br>
+		- Rebalanced the whole game.<br>
+		- Fixed a lot of bugs.<br>
 		 <br><br>
          <h3>v0.1</h3><br>
 		- Added the 3rd layer.<br>

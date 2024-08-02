@@ -1,3 +1,4 @@
+let lastAutomateTime = 0;
 addLayer("A", {
   row: "side",
   name: "Achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
@@ -293,7 +294,7 @@ addLayer("A", {
       name: "Developer forgot that",
       tooltip: "Buy true empowerer in Endless Void.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100)
+        return player.h.points.gte(1000)
       },
       style() {
         return {
@@ -306,10 +307,10 @@ addLayer("A", {
       },
     },
     42: {
-      name: "I have no upgrades but I must win",
+      name: "I have no upgrades and I must win",
       tooltip: "Reach 2000 wins in Placeholder 2 without buying any upgrades.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100)
+        return player.h.points.gte(1000)
       },
       style() {
         return {
@@ -325,7 +326,7 @@ addLayer("A", {
       name: "Items are useless",
       tooltip: "Perform a heavenly reset without buying any items except sharp shard.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100)
+        return player.h.points.gte(1000)
       },
       style() {
         return {
@@ -341,7 +342,7 @@ addLayer("A", {
       name: "I'm still standing",
       tooltip: "Perform a heavenly reset while your booster is sacrificed.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100)
+        return player.h.points.gte(1000)
       },
       style() {
         return {
@@ -357,7 +358,7 @@ addLayer("A", {
       name: "This shouldn't be possible",
       tooltip: "Reach 50k wins with only accelerators.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100)
+        return player.h.points.gte(1000)
       },
       style() {
         return {
@@ -655,12 +656,14 @@ doReset(resettingLayer) {
     exponent: 0.6,// Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
+        let chleffect23 = new Decimal(upgradeEffect('w', 11))
+        chleffect23 = chleffect23.pow(4.75)
         if (hasUpgrade('w', 13)) mult = mult.divide(upgradeEffect('w', 13))
         if (hasUpgrade('w', 23)) mult = mult.divide(upgradeEffect('w', 23))
         if (hasUpgrade('w', 33)) mult = mult.divide(upgradeEffect('w', 33))
-        if (hasChallenge('m',23)) mult = mult.divide(challengeEffect('m',23))
+        if (hasChallenge('m',23) && hasUpgrade('w', 11)) mult = mult.divide(challengeEffect('m',23))
         if (!inChallenge("m",13) && !inChallenge("m",12) && !inChallenge("m",11) && !inChallenge("m",21) && !inChallenge("m",22) && !inChallenge("m",23) && !inChallenge("m",31)) {if (hasChallenge("m", 12) == 1) mult = mult.divide(challengeEffect("m",12))}
-        if (inChallenge('m',23)) mult = mult.divide(Math.pow(upgradeEffect('w', 11),4.75))
+        if (inChallenge('m',23)  && hasUpgrade('w', 11)) mult = mult.divide(chleffect23)
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -836,12 +839,10 @@ doReset(resettingLayer) {
           description: "Empowers your production based on your magical shards.",
           cost: new Decimal(15),
           effect() {
-            if (hasUpgrade(this.layer,this.id)) {
-              return Math.log(player.m.points.add(3))
-            }
-            else {
-              return Math.log(player.m.points.add(3))
-            }
+            let effect = new Decimal(player.m.points)
+            effect = effect.add(3)
+            effect = effect.log10(effect)
+            return effect
           },
           effectDisplay(){ return format(upgradeEffect(this.layer, this.id)) + "x"},
           unlocked() {
@@ -972,7 +973,8 @@ doReset(resettingLayer) {
               effect = effect.add(1)
               effect = effect.add(upgradeEffect(this.layer, 34))
               if (hasAchievement('A', 13)) effect = effect.mul(1.069)
-              if (getBuyableAmount('m', 63 >= 0)) effect = effect.mul(buyableEffect('m', 63))
+              let bybeff63 = new Decimal(buyableEffect('m', 63))
+              if (getBuyableAmount('m', 63) > 0) effect = effect.mul(bybeff63)
               return effect
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id)) + "÷" },
@@ -1302,8 +1304,16 @@ addLayer("m", {
       "Challenges": {
           content: [
             ["display-text",
-            function() { return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>'},
-            { "color": "grey", "font-size": "13px"}],
+            function() {
+            if(hasChallenge('m', 31)) {
+              return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>Endless Void goal scaling gets stronger after 600 wins.<br>'
+            }
+            return 'Challenges may be too hard if attempted too early.<br>Lower rows are harder than higher rows.<br>'
+            },
+            { "color": "grey", "font-size": "13px"} 
+            
+            ],
+            
             "blank",
             "challenges",
             "blank"
@@ -1360,6 +1370,29 @@ addLayer("m", {
     hotkeys: [
       {key: "m", description: "M: Reset your wins for magical shards.", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
   ],
+  doReset(resettingLayer) {
+    if (layers[resettingLayer].row <= layers[this.layer].row) return; // just necessary boilerplate
+    
+    let keptChallenges = {};
+    if (hasMilestone('h', 5)) keptChallenges[11] = challengeCompletions('m', 11);
+    if (hasMilestone('h', 6)) keptChallenges[21] = challengeCompletions('m', 21);
+    if (hasMilestone('h', 9)) keptChallenges[12] = challengeCompletions('m', 12);
+    if (hasMilestone('h', 9)) keptChallenges[13] = challengeCompletions('m', 13);
+    if (hasMilestone('h', 9)) keptChallenges[22] = challengeCompletions('m', 12);
+    if (hasMilestone('h', 9)) keptChallenges[23] = challengeCompletions('m', 23);
+    let keptBuyables = {};
+    if (hasMilestone('h', 1)) keptBuyables[21] = getBuyableAmount('m', 21);
+
+    layerDataReset(this.layer, keptChallenges);
+    layerDataReset(this.layer, keptBuyables);
+
+    for (const [id, completions] of Object.entries(keptChallenges)) {
+      player[this.layer].challenges[id] = completions;
+    }
+    for (const [id, amount] of Object.entries(keptBuyables)) {
+      setBuyableAmount('m', id, amount);   
+  }     
+  },
     challenges: {
       11: {
         name: "Desperation",
@@ -1402,17 +1435,21 @@ addLayer("m", {
         rewardDescription: "Magical shards make winning easier. (Only works outside of challenges.)",
         rewardEffect() {
           let effect = new Decimal(1)
+          let upgeffect41 = new Decimal(player.m.points)
           if(hasUpgrade('w',41)) {
-            effect = effect.add(Math.pow(player.m.points, 0.85))
+            upgeffect41 = upgeffect41.pow(0.85)
+            effect = effect.add(upgeffect41)
             if (effect.lt("1e20")) {
               return effect
             } else {
+              effect = new Decimal("1e20")
               effect = new Decimal("1e20")
               return effect
             }
           }
           else {
-            effect = effect.add(Math.sqrt((player.m.points)))
+            upgeffect41 = upgeffect41.sqrt(upgeffect41)
+            effect = effect.add(upgeffect41)
           if (effect.lt(50000000)) {
             return effect
           } else {
@@ -1592,12 +1629,10 @@ addLayer("m", {
         },
         rewardEffect() {
           let effect = new Decimal(1)
-          if (hasUpgrade('w',11)) {
-            effect = effect.add(Math.pow(upgradeEffect('w', 11),0.95))
-            return effect
-          } else {
-            return effect
-          }
+          let basedeffect = new Decimal(upgradeEffect('w', 11))
+          basedeffect = basedeffect.pow(0.95)
+          effect = effect.add(basedeffect)
+          return effect
         },
         style: {"backgroundColor": "#392467","width": "250px",
 
@@ -1617,25 +1652,20 @@ addLayer("m", {
         name: "Endless Void",
         challengeDescription: "",
         goal() {
-          let x = new Decimal(challengeCompletions(this.layer, this.id)).sub(1)
-          x = x.add(1)
-          if (hasMilestone('h',8)) {
-            let base = new Decimal(70)
-            let power = new Decimal(25)
-            let calc = new Decimal(base).add(power.mul(x))
-            return calc
-          } else {
-            if (hasAchievement('A',31)){
-              let base = new Decimal(70)
-              let power = new Decimal(29)
-              let calc = new Decimal(base).add(power.mul(x))
-              return calc
-            } else {
-              let base = new Decimal(70)
-              let power = new Decimal(30)
-              let calc = new Decimal(base).add(power.mul(x))
-              return calc}
-            }
+          let x = new Decimal(challengeCompletions(this.layer, this.id))
+          let base = new Decimal(70)
+          let power = new Decimal(30)
+          if (hasAchievement('A', 31)) power = power.sub(1)
+          if (hasMilestone('h',8)) power = power.sub(4)
+          if (hasMilestone('h',11)) power = power.sub(3)
+          let calc = new Decimal(base.add(power.mul(x)))
+          if(calc.gte(600)){
+            power = power.add(50)
+            calc = new Decimal(base.add(power.mul(x)))
+          } 
+          let goal = calc
+          
+          return goal
           
          },
         canComplete() {
@@ -1644,38 +1674,75 @@ addLayer("m", {
         let threshold = player.w.points.gte(sc.goal) // add any currency here
         return threshold 
         },
+        rewardEffect() {
+          let effect = new Decimal(200)
+          let chlcomp = new Decimal(challengeCompletions(this.layer,this.id))
+          effect = effect.pow(chlcomp)
+          return effect
+        },
         fullDisplay()
         {
         let chlcomp = new Decimal(challengeCompletions(this.layer,this.id))
         if (chlcomp.gt(0) || player.h.total.gte(1)) {
-          if (hasMilestone('h',8)) {
-            return `
-        Goal: ${(Math.round(chlcomp.mul(25).add(70)))} wins<br>
-        Completions: ${Math.round(chlcomp(this.layer,this.id))} <br>
-        Reward for first completion: Unlock a new item in the shop. <br>
-        Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
-        Currently: ${format(Math.round(Math.pow(200,chlcomp)))}x cheaper
-        `
-          } else {
-            if (hasAchievement('A',31)) {
+          if(hasUpgrade('h', 12)) {
+            if (hasMilestone('h',8)) {
               return `
-        Goal: ${(Math.round(chlcomp.mul(29).add(70)))} wins<br>
-        Completions: ${Math.round(chlcomp)} <br>
-        Reward for first completion: Unlock a new item in the shop. <br>
-        Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
-        Currently: ${format(Math.round(Math.pow(200,chlcomp)))}x cheaper
-        `
-            } else{
-            return `
-        Goal: ${(Math.round(chlcomp.mul(30).add(70)))} wins<br>
-        Completions: ${Math.round(chlcomp)} <br>
-        Reward for first completion: Unlock a new item in the shop. <br>
-        Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
-        Currently: ${format(Math.round(Math.pow(200,chlcomp)))}x cheaper
-        `}
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper <br>
+          and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+          `
+            } else {
+              if (hasAchievement('A',31)) {
+                return `
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper <br>
+          and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+          `
+              } else{
+              return `
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper <br>
+          and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+          `}
+            }
           }
+          else {if (hasMilestone('h',8)) {
+            return `
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper
+          `
+            } else {
+              if (hasAchievement('A',31)) {
+                return `
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper
+          `
+              } else{
+              return `
+          Goal: ${format(this.goal())} wins<br>
+          Completions: ${format(chlcomp)} <br>
+          Reward for first completion: Unlock a new item in the shop. <br>
+          Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+          Currently: ${format(this.rewardEffect())}x cheaper
+          `}
+            }
          
-        } else {
+        }} else {
           return `Goal: Only <p9>god</p9> knows.`
         }
         },
@@ -1736,16 +1803,33 @@ addLayer("m", {
             }
           },
           display() {
-            return `Triples your first booster power for each purchase.<br>
-            x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
-        <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-        <br> ${format(getBuyableAmount('m',11))} /200 Bought`
+            if(getBuyableAmount(this.layer,this.id) == 999){
+              return `Triples your first booster power for each purchase.<br>
+                      x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
+                      <h2>Maximum Amount Reached</h2>
+                      <br> ${format(getBuyableAmount('m',11))} /999 Bought`
+            }
+            else return `Triples your first booster power for each purchase.<br>
+                        x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
+                        <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
+                        <br> ${format(getBuyableAmount('m',11))} /999 Bought`
           },
           canAfford() {
             return player[this.layer].points.gte(this.cost())
           },
           style() {
-            if (this.canAfford()||getBuyableAmount("m",11) == 200) return {
+            if (getBuyableAmount(this.layer,this.id) == 999) {
+              return {
+                "width": "250px",
+                "height": " 125px",
+                "border-radius": "10px",
+                "border": "0px",
+                "margin": "5px",
+                "text-shadow": "0px 0px 10px #000000",
+                "color": "#FFFFFF",
+                "background-color": "#6A3076"}
+            }
+            if (this.canAfford()||getBuyableAmount("m",11) == 999) return {
               "width": "250px",
               "height": " 125px",
               "border-radius": "10px",
@@ -2019,31 +2103,42 @@ addLayer("m", {
           61: {
             purchaseLimit: new Decimal(200),
             title: "'Point'less Shard",
-            cost(x) {
-              let PowerI = new Decimal(10)
-              let Calculation = new Decimal(1).mul(Math.pow(PowerI,(x.add(x.add(12)))))
+            cost() {
+              let cost = new Decimal("1e12")
+              let scale = new Decimal(100)
+              scale = scale.pow(getBuyableAmount(this.layer, this.id))
+              cost = cost.mul(scale)
+
               if(hasAchievement('A', 21)){
-                Calculation = Calculation.div(10)
+                cost = cost.div(10)
               }
               if (challengeCompletions(this.layer,31) > 0) {
-                Calculation = Calculation.divide(Math.pow(200,challengeCompletions(this.layer,31)))
-                return Calculation
+                cost = cost.divide(challengeEffect(this.layer, 31))
+                return cost
               } else {
-                return Calculation
+                return cost
               }
               
             },
             display() {
-              if (hasAchievement('A', 24)) {
-                return `Makes items that cost magical shard 1.3x cheaper.<br>
-                  x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
-                  <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                  <br> ${format(getBuyableAmount('m',61))} /200 Bought`
+              if (hasUpgrade('h', 12)) {
+                return `Makes items that cost magical shard ${format(this.effect().root(getBuyableAmount(this.layer, this.id)))}x cheaper.<br>
+                    x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
+                    <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
+                    <br> ${format(getBuyableAmount('m',61))} /200 Bought`
+                  }
+              else {
+                if (hasAchievement('A', 24)) {
+                  return `Makes items that cost magical shard 1.3x cheaper.<br>
+                    x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
+                    <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
+                    <br> ${format(getBuyableAmount('m',61))} /200 Bought`
+                  }
+                  else return `Makes items that cost magical shard 1.1x cheaper.<br>
+                    x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
+                    <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
+                    <br> ${format(getBuyableAmount('m',61))} /200 Bought`
                 }
-                else return `Makes items that cost magical shard 1.1x cheaper.<br>
-                  x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
-                  <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                  <br> ${format(getBuyableAmount('m',61))} /200 Bought`
               },
             canAfford() {
               return player.points.gte(this.cost())
@@ -2074,8 +2169,12 @@ addLayer("m", {
               setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) {
-              let Effect = new Decimal(1.1).pow(x)
-              if(hasAchievement('A', 24)) Effect = new Decimal(1.3).pow(x)
+              let Effect = new Decimal(1.1)
+              if (hasAchievement('A', 24)) Effect = new Decimal(1.3)
+              let holyupgradeeffect = new Decimal(challengeCompletions('m', 31))
+              holyupgradeeffect = holyupgradeeffect.div(100)
+              if (hasUpgrade('h', 12))Effect = Effect.add(holyupgradeeffect)
+              Effect = Effect.pow(x)
               return Effect;
             },
             unlocked() {
@@ -2085,15 +2184,16 @@ addLayer("m", {
           62: {
             purchaseLimit: new Decimal(200),
             title: "? Shard",
-            cost(x) {
-              let PowerI = new Decimal(10)
-              
-              let Calculation = new Decimal(1).mul(Math.pow(PowerI,(x.add(x.add(12))))).mul(x.mul(2).add(1))
+            cost() {
+              let cost = new Decimal("1e12")
+              let scale = new Decimal(160)
+              scale = scale.pow(getBuyableAmount(this.layer, this.id))
+              cost = cost.mul(scale)
               if (challengeCompletions(this.layer,31) > 0) {
-                Calculation = Calculation.divide(Math.pow(200,challengeCompletions(this.layer,31)))
-                return Calculation
+                cost = cost.divide(challengeEffect(this.layer, 31))
+                return cost
               } else {
-                return Calculation
+                return cost
               }
               
             },
@@ -2138,11 +2238,11 @@ addLayer("m", {
               setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             effect(x) {
-              let Effect = new Decimal(1)
+              let Effect = new Decimal(2)
               if(hasUpgrade('w', 44)) {
-                Effect = Math.pow(2.3, x)
+              Effect = Effect.add(0.3)
               }
-              else Effect = Math.pow(2,x)
+              Effect = Effect.pow(x)
               return Effect;
             },
             unlocked() {
@@ -2153,9 +2253,11 @@ addLayer("m", {
             purchaseLimit: 10,
             title: "Angelic Shard",
             cost(x) {
-              let PowerI = new Decimal(10)
-              let Calculation = new Decimal(1).mul(Math.pow(PowerI,(x.add(x.add(15))))).mul(Math.pow(10, x.mul(48)))
-              return Calculation
+              let basecost = new Decimal("1e15")
+              let scale = new Decimal("1e50")
+              scale = scale.pow(x)
+              basecost = basecost.mul(scale)
+              return basecost
             },
             display() {
               return `Strengthens super divisor based on how many heavenly milestones you have.<br>
@@ -2204,8 +2306,8 @@ addLayer("m", {
               if (hasMilestone('h', 10)) Effect = Effect.add(2)
               if (hasMilestone('h', 11)) Effect = Effect.add(2)
               if (hasMilestone('h', 12)) Effect = Effect.add(2)
-              Effect = Math.pow(Effect, x)
-              Effect = Math.pow(Effect, 1.1)
+              Effect = Effect.pow(x)
+              Effect = Effect.pow(1.1)
               return Effect;
             },
             unlocked() {
@@ -2218,33 +2320,7 @@ addLayer("m", {
     },
 })
 addLayer("h", {
-  doReset(resettingLayer) {
-    // Stage 1, almost always needed, makes resetting this layer not delete your progress
-    if (layers[resettingLayer].row <= this.row) return;
-  
-    // Stage 2, track which specific subfeatures you want to keep, e.g. Upgrade 11, Challenge 32, Buyable 12
-    let keptBuyables = {};
-    if (resettingLayer == "h" && hasMilestone('h',1)) keptBuyables[21] = getBuyableAmount(this.layer, 21);
-    let keptChallenges = [];
-    if (resettingLayer == "h" && hasMilestone('h',5)) keptChallenges[11] = challengeCompletions(this.layer, 11)
-    if (resettingLayer == "h" && hasMilestone('h',6)) keptChallenges[21] = challengeCompletions(this.layer, 21)
-    if (resettingLayer == "h" && hasMilestone('h',9)) keptChallenges[12] = challengeCompletions(this.layer, 12)
-    if (resettingLayer == "h" && hasMilestone('h',9)) keptChallenges[13] = challengeCompletions(this.layer, 13)
-    if (resettingLayer == "h" && hasMilestone('h',9)) keptChallenges[22] = challengeCompletions(this.layer, 22);
-    if (resettingLayer == "h" && hasMilestone('h',9)) keptChallenges[23] = challengeCompletions(this.layer, 23)
-    // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
-    let keep = [];
-    if (resettingLayer == "h") keep.push();
-  
-    // Stage 4, do the actual data reset
-    layerDataReset(this.layer, keep);
-  
-    // Stage 5, add back in the specific subfeatures you saved earlier
-    player.m.challenges = keptChallenges
-    for (const [id, amount] of Object.entries(keptBuyables)) {
-      setBuyableAmount(this.layer, id, amount);   
-  }     
-},
+
   name: "heaven", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "H", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
@@ -2279,27 +2355,33 @@ addLayer("h", {
     },
     effect(){
       let effect = new Decimal(1)
-      if(player.h.points.gte(0) && player.h.points.lte(20)) effect = format(effect.add(player.h.points.div(100)))
-      if(player.h.points.gte(21) && player.h.points.lte(60)) effect = format(effect.add(player.h.point.div(200)).add(0.1))
-      if(player.h.points.gte(61) && player.h.points.lte(660)) effect = format(effect.add(player.h.point.div(1000)).add(0.34))
-      if(player.h.points.gte(661) && player.h.points.lte(10000)) effect = format(effect.add(player.h.point.div(15000)).add(0.96))
-      if(player.h.points.gte(10001)) effect = new Decimal(2.64)
-      if(hasMilestone('h', 8)) effect = effect.add(effect.div(10))
+      let plyhpnts = new Decimal(player.h.points)
+      let scale = new Decimal(plyhpnts.div(100))
+      if (player.h.points.gte(40) && player.h.points.lte(10000)) scale = new Decimal(plyhpnts.div(5000)).add(0.4)
+      if (hasMilestone(this.layer, 8)) scale = scale.add(0.02)
+      effect = effect.add(scale)
+      effect = effect.sqrt(effect)
+      if (player.h.points.gte(10001)) effect = new Decimal(1.86)
       return effect
     },
     effectDescription() {
-    if(player.h.points.gte(10001) ) return `which is raising magical shard gain up to ^${this.effect()} <span style="color: #ff0000">(CAPPED)</span>`
-    if(player.h.points.gte(21)  && player.h.points.lte(10000)) return `which is raising magical shard gain up to ^${this.effect()} <span style="color: #ff0000">(SOFTCAPPED)</span>`
-    else return `which is raising magical shard gain up to ^${this.effect()}`
+    if(player.h.points.gte(10001) ) return `which is raising magical shard gain up to ^${format(temp.h.effect)} <span style="color: #ff0000">(CAPPED)</span>`
+    if(player.h.points.gte(40)  && player.h.points.lte(10000)) return `which is raising magical shard gain up to ^${format(temp.h.effect)} <span style="color: #ff0000">(SOFTCAPPED)</span>`
+    else return `which is raising magical shard gain up to ^${format(temp.h.effect)}`
     }, 
-    automate(){
-      if (player.h.auto && hasMilestone(this.layer,4) == true){
-        if (canBuyBuyable('m',11)) {buyBuyable('m',11)}
-        if (canBuyBuyable('m',12)) {buyBuyable('m',12)}
-        if (canBuyBuyable('m',22)) {buyBuyable('m',22)}
-        if (canBuyBuyable('m',61)) {buyBuyable('m',61)}
-        if (canBuyBuyable('m',62)) {buyBuyable('m',62)}
-        if (canBuyBuyable('m',63)) {buyBuyable('m',63)}
+    automate(){const now = Date.now();
+      const delay = 500; 
+  
+      if (now - lastAutomateTime >= delay) {
+          if (player.h.auto && hasMilestone(this.layer, 4)) {
+              if (canBuyBuyable('m', 11)) { buyBuyable('m', 11); }
+              if (canBuyBuyable('m', 12)) { buyBuyable('m', 12); }
+              if (canBuyBuyable('m', 22)) { buyBuyable('m', 22); }
+              if (canBuyBuyable('m', 61)) { buyBuyable('m', 61); }
+              if (canBuyBuyable('m', 62)) { buyBuyable('m', 62); }
+              if (canBuyBuyable('m', 63)) { buyBuyable('m', 63); }
+          }
+          lastAutomateTime = now;
       }
     },
     componentStyles: {
@@ -2334,11 +2416,15 @@ addLayer("h", {
       "Holy Upgrades":{
         content: [
           ["display-text",
-            function() { return "Buying a holy upgrade will reveal another upgrade in their respective columns. <br> Also buying a holy upgrade increases other upgrades in their row to increase in cost."},
+            function() { return "Buying a holy upgrade will reveal another upgrade in the next column. <br> Also buying a holy upgrade increases other upgrades in their row to increase in cost."},
             { "color": "grey", "font-size": "13px"}],
           "blank",
           "upgrades"
-        ]
+        ],
+        unlocked() {
+          if (hasAchievement('A', 35)) return true
+          else return false
+        },
       },
     
       "Ancient Tree": {
@@ -2358,12 +2444,19 @@ upgrades: {
     description: "Unlock a new item in the shop.",
     cost() {
       let cost = new Decimal(1)
-      if(!hasUpgrade(this.layer,this.id)) {}
-      if (hasUpgrade(this.layer, 12) || hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
-      if (hasUpgrade(this.layer, 12) && hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
+      if (hasUpgrade(this.layer, 12) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
+      if (hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
       return cost
     },
     effect() {
+    },
+    fullDisplay(){
+      if(hasUpgrade(this.layer,this.id)) {
+        return 'Unlock a new item in the shop.'
+      }
+      if(!hasUpgrade(this.layer,this.id)) {
+        return 'Unlock a new item in the shop.<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+      }
     },
     style() {
       if(player.h.points >= this.cost() && !hasUpgrade(this.layer, this.id)) {
@@ -2413,12 +2506,20 @@ upgrades: {
     },
   12: {
     title: "",
-    description: "aliensar",
+    description: "Unlock a new reward for Endless Void.",
     cost() {
-      let cost = new Decimal(999)
-      if (hasUpgrade(this.layer, 11) || hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
-      if (hasUpgrade(this.layer, 11) && hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
+      let cost = new Decimal(1)
+      if (hasUpgrade(this.layer, 11) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
+      if (hasUpgrade(this.layer, 13) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
       return cost
+    },
+    fullDisplay(){
+      if(hasUpgrade(this.layer,this.id)) {
+        return 'Unlock a new reward for Endless Void.'
+      }
+      if(!hasUpgrade(this.layer,this.id)) {
+        return 'Unlock a new reward for Endless Void.<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+      }
     },
     effect() {
     },
@@ -2473,9 +2574,17 @@ upgrades: {
       description: "Unlock a new row of upgrades.",
       cost() {
         let cost = new Decimal(1)
-        if (hasUpgrade(this.layer, 11) || hasUpgrade(this.layer, 12) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
-        if (hasUpgrade(this.layer, 11) && hasUpgrade(this.layer, 12) && !hasUpgrade(this.layer, this.id)) cost = cost.add(1)
+        if (hasUpgrade(this.layer, 11) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
+        if (hasUpgrade(this.layer, 12) && !hasUpgrade(this.layer,this.id)) cost = cost.add(1)
         return cost
+      },
+      fullDisplay(){
+        if(hasUpgrade(this.layer,this.id)) {
+          return 'Unlock a new row of upgrades.'
+        }
+        if(!hasUpgrade(this.layer,this.id)) {
+          return 'Unlock a new row of upgrades.<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+        }
       },
       effect() {
       },
@@ -2516,7 +2625,7 @@ upgrades: {
           "margin": "5px",
           "text-shadow": "0px 0px 10px #000000",
           "color": "#FFFFFF",
-          "background-color": "#bf8f8f",
+          "background-color": "#bf8f8f" ,
           "margin-right": "40px",
           }
         }
@@ -2525,6 +2634,205 @@ upgrades: {
         return true
       }
       },
+      21: {
+        title: "",
+        description: "Unlock 2 new challenges.",
+        cost() {
+          let cost = new Decimal(50)
+          if (hasUpgrade(this.layer, 22) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+          if (hasUpgrade(this.layer, 23) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+          return cost
+        },
+        fullDisplay(){
+          if(hasUpgrade(this.layer,this.id)) {
+            return 'Unlock 2 new challenges.'
+          }
+          if(!hasUpgrade(this.layer,this.id)) {
+            return 'Unlock 2 new challenges.<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+          }
+        },
+        effect() {
+        },
+        style() {
+          if(player.h.points >= this.cost() && !hasUpgrade(this.layer, this.id)) {
+          return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background-color": "rgb(179, 19, 18)",
+            "margin-right": "40px",
+            }
+          }
+          if(hasUpgrade(this.layer, this.id)){
+          return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background": "linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(74,22,22,1) 35%, rgba(198,25,34,1) 100%)",
+            "margin-right": "40px",
+          }
+          
+          }
+          else {
+            return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background-color": "#bf8f8f" ,
+            "margin-right": "40px",
+            }
+          }
+        },
+        unlocked() {
+         if (hasUpgrade(this.layer, 11)) return true
+         else return false
+        }
+        },
+        
+        22: {
+        title: "",
+        description: "Unlock a new effect for pure energy.",
+        cost() {
+          let cost = new Decimal(50)
+          if (hasUpgrade(this.layer, 21) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+          if (hasUpgrade(this.layer, 23) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+          return cost
+        },
+        fullDisplay(){
+          if(hasUpgrade(this.layer,this.id)) {
+            return 'Unlock a new effect for pure energy.'
+          }
+          if(!hasUpgrade(this.layer,this.id)) {
+            return 'Unlock a new effect for pure energy.<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+          }
+        },
+        effect() {
+        },
+        style() {
+          if(player.h.points >= this.cost() && !hasUpgrade(this.layer, this.id)) {
+          return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background-color": "rgb(179, 19, 18)",
+            "margin-right": "40px",
+            }
+          }
+          if(hasUpgrade(this.layer, this.id)){
+          return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background": "linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(74,22,22,1) 35%, rgba(198,25,34,1) 100%)",
+            "margin-right": "40px",
+          }
+          
+          }
+          else {
+            return {
+            "width": "170px",
+            "height": " 150px",
+            "border-radius": "35px",
+            "border": "0px",
+            "margin": "5px",
+            "text-shadow": "0px 0px 10px #000000",
+            "color": "#FFFFFF",
+            "background-color": "#bf8f8f" ,
+            "margin-right": "40px",
+            }
+          }
+        },
+        unlocked() {
+         if (hasUpgrade(this.layer, 12)) return true
+         else return false
+        }
+        },
+        23: {
+          title: "",
+          description: "Unlock a new heavenly milestone.<br>(Which will be located below the 100 pure energy milestone)",
+          cost() {
+            let cost = new Decimal(50)
+            if (hasUpgrade(this.layer, 21) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+            if (hasUpgrade(this.layer, 22) && !hasUpgrade(this.layer,this.id)) cost = cost.add(25)
+            return cost
+          },
+          fullDisplay(){
+            if(hasUpgrade(this.layer,this.id)) {
+              return 'Unlock a new heavenly milestone.<br>(Which will be located below the 100 pure energy milestone)'
+            }
+            if(!hasUpgrade(this.layer,this.id)) {
+              return 'Unlock a new heavenly milestone.<br>(Which will be located below the 100 pure energy milestone)<br>' + '<br>Cost: ' + this.cost() + ' Pure Energy'
+            }
+          },
+          effect() {
+          },
+          style() {
+            if(player.h.points >= this.cost() && !hasUpgrade(this.layer, this.id)) {
+            return {
+              "width": "170px",
+              "height": " 150px",
+              "border-radius": "35px",
+              "border": "0px",
+              "margin": "5px",
+              "text-shadow": "0px 0px 10px #000000",
+              "color": "#FFFFFF",
+              "background-color": "rgb(179, 19, 18)",
+              "margin-right": "40px",
+              }
+            }
+            if(hasUpgrade(this.layer, this.id)){
+            return {
+              "width": "170px",
+              "height": " 150px",
+              "border-radius": "35px",
+              "border": "0px",
+              "margin": "5px",
+              "text-shadow": "0px 0px 10px #000000",
+              "color": "#FFFFFF",
+              "background": "linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(74,22,22,1) 35%, rgba(198,25,34,1) 100%)",
+              "margin-right": "40px",
+            }
+            
+            }
+            else {
+              return {
+              "width": "170px",
+              "height": " 150px",
+              "border-radius": "35px",
+              "border": "0px",
+              "margin": "5px",
+              "text-shadow": "0px 0px 10px #000000",
+              "color": "#FFFFFF",
+              "background-color": "#bf8f8f" ,
+              "margin-right": "40px",
+              }
+            }
+          },
+          unlocked() {
+           if (hasUpgrade(this.layer, 13)) return true
+           else return false
+          }
+          },
     
   
 },
@@ -2732,7 +3040,7 @@ milestones: {
   },
   8: {
     requirementDescription: "20 Total Pure Energy",
-    effectDescription: `Pure energy's effect on magical shard gain is better.`,
+    effectDescription: `Pure energy's effect on magical shard gain is slightly better.`,
     done() { return player.h.total.gte(20) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
@@ -2816,7 +3124,7 @@ milestones: {
   },
   11: {
     requirementDescription: "100 Total Pure Energy",
-    effectDescription: "Endless Void scaling is reduced further. <br> Goal formula for x completions: 70+(x.25) => 70+(x.15)",
+    effectDescription: "Endless Void scaling is reduced further. <br> Goal formula for x completions: 70+(x.25) => 70+(x.22)",
     done() { return player.h.total.gte(200) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
