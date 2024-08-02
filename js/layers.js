@@ -1716,7 +1716,7 @@ addLayer("m", {
           let base = new Decimal(70)
           let power = new Decimal(30)
           if (hasAchievement('A', 31)) power = power.sub(1)
-          if (hasMilestone('h',8)) power = power.sub(4)
+          if (hasMilestone('h',7)) power = power.sub(4)
           if (hasMilestone('h',10)) power = power.sub(3)
           let calc = new Decimal(base.add(power.mul(x)))
           if(x.gte(20)){
