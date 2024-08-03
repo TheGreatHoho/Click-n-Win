@@ -3543,7 +3543,7 @@ milestones: {
   },
   7: {
     requirementDescription: "10 Total Pure Energy",
-    effectDescription: `Endless Void scaling is reduced by 5.<br>
+    effectDescription: `Endless Void scaling is reduced by 4.<br>
     Goal formula for x completions: 70+(x.29) => 70+(x.25)
     `,
     done() { return player.h.total.gte(10) },
