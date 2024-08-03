@@ -637,7 +637,7 @@ doReset(resettingLayer) {
 
   // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
   let keep = [];
-  if (resettingLayer == "w" || resettingLayer == "m" || hasMilestone('h',3)) keep.push("milestones"),
+  if (resettingLayer == "w" || resettingLayer == "m" || hasMilestone('h',2)) keep.push("milestones"),
   keep.push("best")
   // Stage 4, do the actual data reset
   layerDataReset(this.layer, keep);
@@ -1433,7 +1433,7 @@ addLayer("m", {
 		points: new Decimal(0),
     }},
     passiveGeneration() {
-      if (hasMilestone('h',2)) {
+      if (hasMilestone('h',3)) {
         return hasMilestone('w',5) ? 1 : 0
       } else {
         if(hasMilestone('w',5)) return hasMilestone('w',5) ? 0.1 : 0
@@ -3401,7 +3401,7 @@ milestones: {
   },
   2: {
     requirementDescription: "2 Total Pure Energy",
-    effectDescription: "Improve the fifth win milestone from 10% to 100%.",
+    effectDescription: "Keep win milestones on heavenly resets.",
     done() { return player.h.total.gte(2) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
@@ -3429,7 +3429,7 @@ milestones: {
   },
   3: {
     requirementDescription: "3 Total Pure Energy",
-    effectDescription: "Keep win milestones on heavenly resets.",
+    effectDescription: "Improve the fifth win milestone from 10% to 100%.",
     done() { return player.h.total.gte(3) },
     style(){
     if (hasMilestone(this.layer,this.id)) {
