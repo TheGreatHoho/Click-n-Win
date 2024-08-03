@@ -13,11 +13,17 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2",
-	name: "Rebalancing"	,
+	num: "0.3",
+	name: "This game sucks update"	,
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+      <br><br>
+        <h3>v0.3</h3><br>
+      - Added a new row of achievements.<br>
+      - Added new content.<br>
+      - Added auto-win.<br>
+      - Fixed bugs. (How surprising)<br>
       <br><br>
         <h3>v0.21</h3><br>
       - Added sacrifice.<br>
@@ -100,6 +106,8 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 	let gain = new Decimal(1)
+  if (hasUpgrade('h',31)) gain = gain.mul(upgradeEffect('h',31))
+  if (hasUpgrade('h',33)) gain = gain.mul(upgradeEffect('h',33))
   if (hasAchievement('A',14)) gain = gain.mul(1.1)
 	if (hasMilestone('h',1)) gain = gain.mul(2)
   if (hasAchievement('A',32)) gain = gain.mul(calculateAch32Reward())
@@ -120,21 +128,19 @@ function getPointGen() {
 	if (getBuyableAmount('m', 22) > 0) gain = gain.times(buyableEffect('m', 22))
 	if (hasChallenge("m",21)) gain = gain.pow(1.08)
 	if (inChallenge("m",21)) gain = gain.pow(0.1)
-	if (inChallenge("m",21)) gain = gain.mul(Math.sin(player.w.points)).add(1)
-	if (inChallenge("m",13)) {
-		if(hasUpgrade("w",11))gain = gain.div(100)	
-		if(hasUpgrade("w",12))gain = gain.div(100)
-		if(hasUpgrade("w",13))gain = gain.div(100)
-		if(hasUpgrade("w",14))gain = gain.div(100)
-		if(hasUpgrade("w",21))gain = gain.div(100)
-		if(hasUpgrade("w",22))gain = gain.div(100)
-		if(hasUpgrade("w",23))gain = gain.div(100)
-		if(hasUpgrade("w",24))gain = gain.div(100)
-		if(hasUpgrade("w",31))gain = gain.div(100)
-		if(hasUpgrade("w",32))gain = gain.div(100)
-		if(hasUpgrade("w",33))gain = gain.div(100)
-		if(hasUpgrade("w",34))gain = gain.div(100)
-	}
+	if (inChallenge("m",21)) gain = gain.mul(player.w.points.sin(player.w.points)).add(1)
+  if (inChallenge("m", 13)) {
+      const upgrades = [
+          "11", "12", "13", "14", "21", "22", "23", "24", 
+          "31", "32", "33", "34", "41", "42", "43", "44"
+      ];
+  
+      upgrades.forEach(upgrade => {
+          if (hasUpgrade("w", upgrade)) {
+              gain = gain.div(100);
+          }
+      });
+  }
 	if (inChallenge("m",22)) {
 		if (player.w.points == 0) {
 			gain = gain.mul(1).add(1)
@@ -142,6 +148,10 @@ function getPointGen() {
 			gain = gain.divide(player.w.points.pow(10).add(1))
 		}
 	}
+  if (inChallenge("m",33)) {
+    gain = gain.pow(0.01)
+  }
+  if (hasUpgrade('h', 22)) gain = gain.pow(temp.h.effect.pow(0.3))
 	return gain
 }
 
@@ -185,6 +195,49 @@ function calculatetimeplayed() {
 		return (player.timePlayed / 3600) + 1	
 	}
 }
+let isWKeyHeld = false;
+let holdInterval = null;
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'w' || event.key === 'W') {
+        if (!isWKeyHeld) {
+            // If "W" is not currently held, start holding it down
+            isWKeyHeld = true;
+            startHoldingW();
+        } else {
+            // If "W" is already being held, stop holding it down
+            isWKeyHeld = false;
+            stopHoldingW();
+        }
+    }
+});
+
+function startHoldingW() {
+
+    // Start a repeating action while "W" is held down
+    holdInterval = setInterval(() => {
+        if (!isWKeyHeld) {
+            clearInterval(holdInterval);
+            holdInterval = null;
+            return;
+        }
+        // Perform action while holding down "W"
+
+    }, 1000);
+}
+
+function stopHoldingW() {
+
+    // Perform cleanup or final actions
+    if (holdInterval) {
+        clearInterval(holdInterval);
+        holdInterval = null;
+    }
+}
+
+
+
+
 
 
 
