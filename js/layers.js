@@ -394,7 +394,7 @@ addLayer("A", {
       name: "Nah, I'd win",
       tooltip: "Defeat Angel 1.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte(100000)
+        return player.h.points.gte("1e20")
       },
       style() {
         return {
