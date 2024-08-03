@@ -1956,7 +1956,7 @@ addLayer("m", {
       
     buyables: {
         11: {
-            purchaseLimit: new Decimal(999),
+            purchaseLimit: new Decimal(9999999),
             title: "Powered Shard",
           cost(x) {
             if (x.lt(5)) {
@@ -1987,24 +1987,24 @@ addLayer("m", {
                 return `Multiplies your booster power by 3.05 for each purchase.<br>
                         x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                         <h2>Maximum Amount Reached</h2>
-                        <br> ${format(getBuyableAmount('m',11))} /999 Bought`
+                        <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
               }
               else return `Multiplies your booster power by 3.05 for each purchase.<br>
                           x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-                          <br> ${format(getBuyableAmount('m',11))} /999 Bought`
+                          <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
             }
             else {
               if(getBuyableAmount(this.layer,this.id) == this.purchaseLimit){
                 return `Triples your booster power for each purchase.<br>
                         x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                         <h2>Maximum Amount Reached</h2>
-                        <br> ${format(getBuyableAmount('m',11))} /999 Bought`
+                        <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
               }
               else return `Triples your booster power for each purchase.<br>
                           x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-                          <br> ${format(getBuyableAmount('m',11))} /999 Bought`
+                          <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
             }
             
           },
@@ -2012,7 +2012,7 @@ addLayer("m", {
             return player[this.layer].points.gte(this.cost())
           },
           style() {
-            if (getBuyableAmount(this.layer,this.id) == 999) {
+            if (getBuyableAmount(this.layer,this.id) == this.purchaseLimit) {
               return {
                 "width": "250px",
                 "height": " 125px",
@@ -2023,7 +2023,7 @@ addLayer("m", {
                 "color": "#FFFFFF",
                 "background-color": "#6A3076"}
             }
-            if (this.canAfford()||getBuyableAmount("m",11) == 999) return {
+            if (this.canAfford()||getBuyableAmount("m",11) == this.purchaseLimit) return {
               "width": "250px",
               "height": " 125px",
               "border-radius": "10px",
@@ -2301,7 +2301,7 @@ addLayer("m", {
             }
           },
           61: {
-            purchaseLimit: new Decimal(200),
+            purchaseLimit: new Decimal(999999),
             title: "'Point'less Shard",
             cost() {
               let cost = new Decimal("1e12")
@@ -2403,7 +2403,7 @@ addLayer("m", {
             }
           },
           62: {
-            purchaseLimit: new Decimal(200),
+            purchaseLimit: new Decimal(999999),
             title: "? Shard",
             cost() {
               let cost = new Decimal("1e12")
