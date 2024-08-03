@@ -808,7 +808,7 @@ doReset(resettingLayer) {
               },
             effect() {
               effect = new Decimal(buyableEffect('m', 11).mul(2))
-              return format(effect)
+              return effect
             },   
         },
         12: {
