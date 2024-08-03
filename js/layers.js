@@ -589,10 +589,10 @@ milestones: {
     5: {
       requirementDescription: "Win the game 10000 times",
       effectDescription() {
-        if (hasMilestone('h',2)) {
-          return "Each second, gain 10% of the magical shard you would gain by resetting."
+        if (hasMilestone('h',3)) {
+          return "Each second, gain 100% of the magical shard you would gain by resetting."
         }
-        else return "Each second, gain 100% of the magical shard you would gain by resetting."
+        else return "Each second, gain 10% of the magical shard you would gain by resetting."
       },
       done() { return player.w.points.gte(10000) },
       style(){
