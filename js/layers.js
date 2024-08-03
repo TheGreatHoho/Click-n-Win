@@ -2503,7 +2503,7 @@ addLayer("m", {
             },
             display() {
               return `Strengthens super divisor based on how many heavenly milestones you have.<br>
-              x${format(tmp[this.layer].buyables[this.id].effect)} Divisor Power</b><br>
+              x${format(tmp[this.layer].buyables[this.id].effect)} Super Divisor Power</b><br>
           <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
           <br> ${format(getBuyableAmount('m',63))} /25 Bought`
             },
