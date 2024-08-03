@@ -85,7 +85,7 @@ function challengeEffect(){
     return "<h5>You are currently inside the Placeholder 1. <br> If you win right now, your point production will be multiplied by </h5>" + Effect
   }
   if (inChallenge('m', 31)) {
-    return "<h5>You are currently inside the Endless Void</h5>" + "You have " + player.w.points + " wins and you will gain " + getResetGain('w') + " wins on reset"
+    return "<h5>You are currently inside the Endless Void</h5>" + "You have " + player.w.points + " wins and you will have " + player.w.points.add(getResetGain('w')) + " wins on reset"
   }
   else{
     return false
