@@ -310,7 +310,7 @@ addLayer("A", {
       name: "Not so challenging",
       tooltip: "Beat every challenge at least once.<h5>Reward: Make the item autobuyer faster.<br>(Buying an item every 500ms => 100ms)<h5>",
       done() {
-        if(hasAchievement('m',11) && hasAchievement('m',12) && hasAchievement('m',13) && hasAchievement('m',21) && hasAchievement('m',22) && hasAchievement('m',23) && hasAchievement('m',31) && hasAchievement('m',32) && hasAchievement('m',33)) {
+        if(hasChallenge('m',11) && hasChallenge('m',12) && hasChallenge('m',13) && hasChallenge('m',21) && hasChallenge('m',22) && hasChallenge('m',23) && hasChallenge('m',31) && hasChallenge('m',32) && hasChallenge('m',33)) {
           return true
         }
         
