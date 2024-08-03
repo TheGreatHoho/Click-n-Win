@@ -2511,7 +2511,7 @@ addLayer("m", {
               return player.points.gte(this.cost())
             },
             style() {
-              if (this.canAfford()||getBuyableAmount("m",63) == 10) return {
+              if (this.canAfford()||getBuyableAmount("m",63) == this.purchaseLimit) return {
                 "width": "250px",
                 "height": " 125px",
                 "border-radius": "10px",
