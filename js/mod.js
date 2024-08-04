@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
-	name: "This game sucks update"	,
+	num: "0.4",
+	name: "This update sucks update"	,
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+      <br><br>
+        <h3>v0.4</h3><br>
+      - Improved QoL. 
       <br><br>
         <h3>v0.3</h3><br>
       - Added a new row of achievements.<br>
@@ -235,6 +238,44 @@ function stopHoldingW() {
     }
 }
 
+function nextEndVoidGoal() {
+     
+  let x = new Decimal(challengeCompletions('m', 31)).add(1)
+  let base = new Decimal(70)
+  let power = new Decimal(30)
+
+  if (hasAchievement('A', 31)) power = power.sub(1)
+  if (hasMilestone('h',7)) power = power.sub(4)
+  if (hasMilestone('h',10)) power = power.sub(3)
+    if (hasMilestone('h',14)) power = power.sub(7)
+  let calc = new Decimal(base.add(power.mul(x)))
+  if(x.gte(20)){
+    power = power.mul(x.div(10))
+    calc = calc.add(power.mul(x.sub(19)))
+  } 
+  if(!inChallenge('m', 31)) {return calc }
+  while (player.w.points.gte(calc)) {
+
+    
+    // Update x and recalculate goal for the next bulk completion
+    x = x.add(1);
+    base = new Decimal(70);
+    power = new Decimal(30);
+    
+    if (hasAchievement('A', 31)) power = power.sub(1);
+    if (hasMilestone('h', 7)) power = power.sub(4);
+    if (hasMilestone('h', 10)) power = power.sub(3);
+    if (hasMilestone('h', 14)) power = power.sub(7);
+    
+    calc = new Decimal(base.add(power.mul(x)));
+    if (x.gte(20)) {
+        power = power.mul(x.div(10));
+        calc = calc.add(power.mul(x.sub(19)));
+    }
+}
+return calc
+  
+}
 
 
 

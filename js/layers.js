@@ -1,4 +1,5 @@
 let lastAutomateTime = 0;
+let autoitembuy = false;
 addLayer("A", {
   row: "side",
   name: "Achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
@@ -29,7 +30,7 @@ addLayer("A", {
         },
     },
     12: {
-      name: "Boosting to the Max!",
+      name: "Boosting to the max!",
       tooltip: "Buy a super booster. <br> <h5>Reward: Divisor is slightly stronger.<h5>",
       done() {
         return hasUpgrade("w",21)
@@ -78,7 +79,7 @@ addLayer("A", {
   },
     15: {
       name: "100 is a lot",
-      tooltip: "Win 100 times. <h5>Reward: You get a high five from me :)<h5>",
+      tooltip: "Win 100 times. <h5>Reward: Feeling of accomplishment.<h5>",
       done() {
         return player.w.points.gte(100)
       },
@@ -93,7 +94,7 @@ addLayer("A", {
       },
     },
     21: {
-      name: "Spending Spree",
+      name: "Spending spree",
       tooltip: "Buy five different types of item from the shop. <h5>Reward: Pointless Shard is 10x cheaper.<h5>",
       done() {
         if (getBuyableAmount("m",11) > 0 && getBuyableAmount("m",12) > 0 && getBuyableAmount("m",21) > 0 && getBuyableAmount("m",61) > 0 && getBuyableAmount("m",62) > 0)
@@ -209,10 +210,10 @@ addLayer("A", {
       },
     },
     32: {
-      name: "Holding w or holding m, that is the question",
+      name: "Can't hold all of these wins",
       tooltip() {
         return `Reach 10k wins.<br>
-                <h5>Reward: Multiply point production based on how many achievements you've unlocked in this row.<h5>` + "Currently: x" + format(calculateAch32Reward())
+                <h5>Reward: Multiply base point production based on how many achievements you've achieved in this row.<h5>` + "Currently: x" + format(calculateAch32Reward())
       },
       done() {
         
@@ -368,7 +369,7 @@ addLayer("A", {
     },
     45: {
       name: "This shouldn't be possible",
-      tooltip: "Reach 380 wins while every booster, accelerator and empowerer is sacrificed and inside Appalment.<h5>Reward: Unlock the fourth row of holy upgrades.<h5>",
+      tooltip: "Reach 380 wins while every booster, accelerator and empowerer is sacrificed and inside Appalment.<h5>Reward: You can bulk buy 2 items at once.<br>(Item autobuyer is also effected by this.)<h5>",
       done() {
         let sacrifice = new Decimal(0);
         const clickableStates = [11, 12, 14, 21, 22, 24, 31, 32, 34];
@@ -394,7 +395,7 @@ addLayer("A", {
       name: "Nah, I'd win",
       tooltip: "Defeat Angel 1.<h5>Reward: Aliensar<h5>",
       done() {
-        return player.h.points.gte("1e20")
+        return player.h.points.gte("1e2000")
       },
       style() {
         return {
@@ -530,8 +531,6 @@ milestones: {
       requirementDescription: "Win the game 700 times",
       effectDescription: "You unlock an autobuyer for the first three rows of win upgrades.",
       done() { return player.w.points.gte(700) },
-      toggles: [["w","auto"]
-      ],
       style(){
         if (hasMilestone(this.layer,this.id)) {
           return {"width": "450px",
@@ -638,6 +637,7 @@ doReset(resettingLayer) {
   // Stage 3, track which main features you want to keep - all upgrades, total points, specific toggles, etc.
   let keep = [];
   if (resettingLayer == "w" || resettingLayer == "m" || hasMilestone('h',2)) keep.push("milestones"),
+  
   keep.push("best")
   // Stage 4, do the actual data reset
   layerDataReset(this.layer, keep);
@@ -744,12 +744,18 @@ doReset(resettingLayer) {
             "blank",
             "main-display",
             ["display-text",
+              function() {if(isWKeyHeld == true) return 'Auto-win is enabled' 
+                else return 'Auto-win is disabled'
+              },
+              { "color": "white", "font-size": "14px"}],
+            ["display-text",
               function() {if(hasUpgrade('h', 13)) return 'Once you buy an upgrade from the fourth row, other upgrades in that row will become significantly more expensive.' },
               { "color": "grey", "font-size": "13px"}],
             "blank",
             "prestige-button",
             "blank",
-            "clickables",
+            ["toggle",
+              function() {if(hasMilestone(this.layer,3)) return ["w","auto"]}],
             "blank",
             "upgrades",
 
@@ -1396,6 +1402,8 @@ addLayer("m", {
             "prestige-button",
             "blank",
             "resource-display",
+            "clickables",
+            "blank",
             "buyables",
             "blank",     
             
@@ -1493,6 +1501,46 @@ addLayer("m", {
       setBuyableAmount('m', id, amount);   
   }     
   },
+  clickables: {
+  
+    11: {
+        display() {
+        if(autoitembuy == false) return "Auto-Buy is OFF"
+        if(autoitembuy == true) return "Auto-Buy is ON"
+        },
+        unlocked() {if(hasMilestone('h',4)) return true},
+        canClick() {if(hasMilestone('h',4)) return true},
+        onClick() {
+          if(autoitembuy == false) return autoitembuy = true
+          if(autoitembuy == true) return autoitembuy = false
+        },
+        style() {
+          if(autoitembuy == false) {
+            return {
+            "width":"100px",
+            "min-height": " 40px",
+            "font-size": "11px",
+            "color": "#908e91",
+            "text-shadow": "2px 2px black",
+            "box-shadow": "none",
+            "border-radius": "20px", 
+            }
+          }
+          else return {
+            "width":"100px",
+            "min-height": " 40px",
+            "font-size": "11px",
+            "color": "white",
+            "text-shadow": "2px 2px black",
+            "box-shadow": "none",
+            "border-radius": "20px", 
+          }
+
+        
+        },
+
+    }
+},
     challenges: {
       11: {
         name: "Desperation",
@@ -1769,13 +1817,53 @@ addLayer("m", {
           return goal
           
          },
-
-        canComplete() {
-        var sc = tmp[this.layer].challenges[this.id]
-         
-        let threshold = player.w.points.gte(sc.goal) // add any currency here
-        return threshold 
-        },
+         canComplete() {
+          if(inChallenge(this.layer, this.id)) {
+            if(hasMilestone('h',11)) {
+              let x = new Decimal(challengeCompletions(this.layer, this.id))
+              let base = new Decimal(70)
+              let power = new Decimal(30)
+              let numCompletions = 0
+              if (hasAchievement('A', 31)) power = power.sub(1)
+              if (hasMilestone('h',7)) power = power.sub(4)
+              if (hasMilestone('h',10)) power = power.sub(3)
+                if (hasMilestone('h',14)) power = power.sub(7)
+              let calc = new Decimal(base.add(power.mul(x)))
+              if(x.gte(20)){
+                power = power.mul(x.div(10))
+                calc = calc.add(power.mul(x.sub(19)))
+              } 
+              while (player.w.points.gte(calc)) {
+                numCompletions += 1;
+                
+                // Update x and recalculate goal for the next bulk completion
+                x = x.add(1);
+                base = new Decimal(70);
+                power = new Decimal(30);
+                
+                if (hasAchievement('A', 31)) power = power.sub(1);
+                if (hasMilestone('h', 7)) power = power.sub(4);
+                if (hasMilestone('h', 10)) power = power.sub(3);
+                if (hasMilestone('h', 14)) power = power.sub(7);
+                
+                calc = new Decimal(base.add(power.mul(x)));
+                if (x.gte(20)) {
+                    power = power.mul(x.div(10));
+                    calc = calc.add(power.mul(x.sub(19)));
+                }
+              }
+              
+              return numCompletions;    
+            }
+          
+          else {
+            var sc = tmp[this.layer].challenges[this.id]
+            let threshold = player.w.points.gte(sc.goal) // add any currency here
+            return threshold 
+          }
+      }
+      else return 0
+          },
         rewardEffect() {
           let effect = new Decimal(200)
           let chlcomp = new Decimal(challengeCompletions(this.layer,this.id))
@@ -1786,6 +1874,66 @@ addLayer("m", {
         {
         let chlcomp = new Decimal(challengeCompletions(this.layer,this.id))
         if (chlcomp.gt(0) || player.h.total.gte(1)) {
+          if(hasMilestone('h',11)) {
+            if(hasUpgrade('h', 12)) {
+              if (hasMilestone('h',8)) {
+                return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()})<br>
+            Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper <br>
+            and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+            `
+              } else {
+                if (hasAchievement('A',31)) {
+                  return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()}) <br>
+            Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper <br>
+            and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+            `
+                } else{
+                return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()}) <br>
+            Reward: The 'pointless' and ? shard items are cheaper and 'pointless' shard is stronger based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper <br>
+            and adding ${format(chlcomp.div(100))} power to 'Pointless Shard'
+            `}
+              }
+            }
+            else {if (hasMilestone('h',8)) {
+              return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()}) <br>
+            Reward for first completion: Unlock a new item in the shop. <br>
+            Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper
+            `
+              } else {
+                if (hasAchievement('A',31)) {
+                  return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()}) <br>
+            Reward for first completion: Unlock a new item in the shop. <br>
+            Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper
+            `
+                } else{
+                return `
+            Goal: ${format(this.goal())} wins next at ${format(nextEndVoidGoal())}<br>
+            Completions: ${format(chlcomp)} (+ ${this.canComplete()}) <br>
+            Reward for first completion: Unlock a new item in the shop. <br>
+            Reward: The 'pointless' and ? shard items are cheaper based on completions.<br>
+            Currently: ${format(this.rewardEffect())}x cheaper
+            `}
+              }
+           
+          }}
+          else {
+
+          }
           if(hasUpgrade('h', 12)) {
             if (hasMilestone('h',8)) {
               return `
@@ -1867,7 +2015,7 @@ addLayer("m", {
         name: "Placeholder 4",
         canComplete: function() {return player.w.points.gte(160)},
         fullDisplay()
-        {return `Your booster is disabled. Also buying any upgrade makes winning extremely difficult.<br>
+        {return `Your booster is disabled. Also each bought upgrade raises winning requirement up to the power of 2.<br>
         Goal: Reach 160 wins to complete the challenge.<br>
         Reward: Makes fourth row upgrades 5x cheaper.<br>
         `
@@ -1955,98 +2103,123 @@ addLayer("m", {
       },
       
     buyables: {
-        11: {
-            purchaseLimit: new Decimal(9999999),
+          11: {
+            purchaseLimit: new Decimal(999999999),
             title: "Powered Shard",
-          cost(x) {
-            if (x.lt(5)) {
-              let PowerI = new Decimal(2)
-              let Calculation = new Decimal(1).mul(Decimal.pow(PowerI, x.pow(1)))
-              if (getBuyableAmount('m',61) > 0) {
-                Calculation = Calculation.divide(buyableEffect('m',61))
-                return Calculation
+            nextCost: null,
+            cost(x) {
+              let PowerI, Calculation, nextCalculation;
+              if (x.lt(5)) {
+                PowerI = new Decimal(2);
+                Calculation = new Decimal(1).mul(PowerI.pow(x));
+                nextCalculation = new Decimal(1).mul(PowerI.pow(x.add(1)));
+                if (getBuyableAmount('m', 61).gt(0)) {
+                  Calculation = Calculation.divide(buyableEffect('m', 61));
+                  nextCalculation = nextCalculation.divide(buyableEffect('m', 61));
+                }
               } else {
-                return Calculation 
+                PowerI = new Decimal(2.1);
+                Calculation = new Decimal(1).mul(PowerI.pow(x));
+                nextCalculation = new Decimal(1).mul(PowerI.pow(x.add(1)));
+                if (getBuyableAmount('m', 61).gt(0)) {
+                  Calculation = Calculation.divide(buyableEffect('m', 61));
+                  nextCalculation = nextCalculation.divide(buyableEffect('m', 61));
+                }
               }
-              
-            }
-            else {
-              let PowerI = new Decimal(2.1)
-              let Calculation = new Decimal(1).mul(Decimal.pow(PowerI, x.pow(1)))
-              if (getBuyableAmount('m',61) > 0) {
-                Calculation = Calculation.divide(buyableEffect('m',61))
-                return Calculation
-              } else {
-                return Calculation 
-              }
-            }
-          },
+              this.nextCost = nextCalculation; // Store the next cost
+              return Calculation;
+            },
           display() {
             if (hasAchievement('A', 44)) {
               if(getBuyableAmount(this.layer,this.id) == this.purchaseLimit){
                 return `Multiplies your booster power by 3.05 for each purchase.<br>
                         x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                         <h2>Maximum Amount Reached</h2>
-                        <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
+                        <br> ${format(getBuyableAmount('m',11))} Bought`
               }
               else return `Multiplies your booster power by 3.05 for each purchase.<br>
                           x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-                          <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
+                          <br> ${format(getBuyableAmount('m',11))} Bought`
             }
             else {
               if(getBuyableAmount(this.layer,this.id) == this.purchaseLimit){
                 return `Triples your booster power for each purchase.<br>
                         x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                         <h2>Maximum Amount Reached</h2>
-                        <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
+                        <br> ${format(getBuyableAmount('m',11))} Bought`
               }
               else return `Triples your booster power for each purchase.<br>
                           x${format(tmp[this.layer].buyables[this.id].effect)} Booster Power</b><br>
                           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-                          <br> ${format(getBuyableAmount('m',11))} /${this.purchaseLimit} Bought`
+                          <br> ${format(getBuyableAmount('m',11))} / Bought`
             }
             
           },
           canAfford() {
-            return player[this.layer].points.gte(this.cost())
-          },
+            let currentAmount = getBuyableAmount(this.layer, this.id);
+            let canAfford = new Decimal(0);
+        
+            if (player[this.layer].points.gte(this.cost())) {
+                // Check if player can buy 1 item
+                canAfford = new Decimal(1);
+        
+                // Check if player can afford 2 items and not exceed the limit
+                if (player[this.layer].points.gte(this.nextCost) &&
+                    hasAchievement('A', 45) &&
+                    currentAmount.lt(this.purchaseLimit.sub(1))) {
+                    canAfford = canAfford.add(1);
+                }
+            }
+        
+            return canAfford;
+        },
           style() {
-            if (getBuyableAmount(this.layer,this.id) == this.purchaseLimit) {
-              return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#6A3076"}
-            }
-            if (this.canAfford()||getBuyableAmount("m",11) == this.purchaseLimit) return {
-              "width": "250px",
-              "height": " 125px",
-              "border-radius": "10px",
-              "border": "0px",
-              "margin": "5px",
-              "text-shadow": "0px 0px 10px #000000",
-              "color": "#FFFFFF",
-              "background-color": "#5941A9"}
-            if (!this.canAfford()) return {
-              "width": "250px",
-              "height": " 125px",
-              "border-radius": "10px",
-              "border": "0px",
-              "margin": "5px",
-              "text-shadow": "0px 0px 10px #000000",
-              "color": "#FFFFFF",
-              "background-color": "#77567F"
-            }
-          },
-          buy() {
-            player[this.layer].points = player[this.layer].points.sub(this.cost())
-            setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-          },
+                if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+                  return {
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#6A3076"}
+                  } else{
+                if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
+                  "width": "250px",
+                  "height": " 125px",
+                  "border-radius": "10px",
+                  "border": "0px",
+                  "margin": "5px",
+                  "text-shadow": "0px 0px 10px #000000",
+                  "color": "#FFFFFF",
+                  "background-color": "#5941A9"}
+                if (this.canAfford().lt(1)) return {
+                  "pointer-events": "none",
+                  "width": "250px",
+                  "height": " 125px",
+                  "border-radius": "10px",
+                  "border": "0px",
+                  "margin": "5px",
+                  "text-shadow": "0px 0px 10px #000000",
+                  "color": "#FFFFFF",
+                  "background-color": "#77567F"
+                }
+              }
+              },
+              buy() {
+                let currentAmount = getBuyableAmount(this.layer, this.id);
+                let afford = this.canAfford();
+            
+                if (afford.eq(1)) {
+                    player[this.layer].points = player[this.layer].points.sub(this.cost());
+                    setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+                } else if (afford.eq(2)) {
+                    player[this.layer].points = player[this.layer].points.sub(this.nextCost);
+                    setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+                }
+            },
           effect() {
             let PowerI = new Decimal(3)
             if(hasAchievement('A', 44)) PowerI = PowerI.add(0.05)
@@ -2058,18 +2231,21 @@ addLayer("m", {
             return true
           }
         },
+
         12: {
             title: "Energized Shard",
             purchaseLimit: new Decimal(15),   
             cost(x) {
                 let PowerI = new Decimal(2)
-                let Calculation = new Decimal(1).mul(Decimal.pow(PowerI, x.pow(1)))
-                if (getBuyableAmount('m',61) > 0) {
-                  Calculation = Calculation.divide(buyableEffect('m',61))
-                  return Calculation
-                } else {
-                  return Calculation 
+                let Calculation = new Decimal(1).mul(PowerI.pow(x))
+                nextCalculation = new Decimal(1).mul(PowerI.pow(x.add(1)));
+                if (getBuyableAmount('m', 61).gt(0)) {
+                  Calculation = Calculation.divide(buyableEffect('m', 61));
+                  nextCalculation = nextCalculation.divide(buyableEffect('m', 61));
                 }
+                this.nextCost = nextCalculation; // Store the next cost
+                return Calculation;
+                
             },
             display() {
             if (hasUpgrade('w',42)) {
@@ -2077,69 +2253,93 @@ addLayer("m", {
                 return `Makes your first accelerator formula better.<br>
               Wins^0.5 => Wins^(0.5 + ${format(getBuyableAmount('m',12).divide(8))}) </b><br>
               <h2>Maximum Amount Reached</h2>
-              <br> ${format(getBuyableAmount('m',12))} /15 Bought`
+              <br> ${format(getBuyableAmount('m',12))} / 15 Bought`
               }
               else {
                 return `Makes your first accelerator formula better.<br>
               Wins^0.5 => Wins^(0.5 + ${format(getBuyableAmount('m',12).divide(8))}) </b><br>
               <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-              <br> ${format(getBuyableAmount('m',12))} /15 Bought`
+              <br> ${format(getBuyableAmount('m',12))} / 15 Bought`
               }
             } else {
               if(getBuyableAmount(this.layer,this.id) == 15){
                 return `Makes your first accelerator formula better.<br>
               Wins^0.5 => Wins^(0.5 + ${format(getBuyableAmount('m',12).divide(11))}) </b><br>
               <h2>Maximum Amount Reached</h2>
-              <br> ${format(getBuyableAmount('m',12))} /15 Bought`
+              <br> ${format(getBuyableAmount('m',12))} / 15 Bought`
               }
               else {
                 return `Makes your first accelerator formula better.<br>
               Wins^0.5 => Wins^(0.5 + ${format(getBuyableAmount('m',12).divide(11))}) </b><br>
               <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-              <br> ${format(getBuyableAmount('m',12))} /15 Bought`
+              <br> ${format(getBuyableAmount('m',12))} / 15 Bought`
               }
             }
             },
             canAfford() {
-              return player[this.layer].points.gte(this.cost())
-            },
-            style() {
-            if (getBuyableAmount(this.layer,this.id) == 15) {
-              return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#6A3076"}
-              } else{
-            if (this.canAfford()||getBuyableAmount("m",12) == 15) return {
-              "width": "250px",
-              "height": " 125px",
-              "border-radius": "10px",
-              "border": "0px",
-              "margin": "5px",
-              "text-shadow": "0px 0px 10px #000000",
-              "color": "#FFFFFF",
-              "background-color": "#5941A9"}
-            if (!this.canAfford()) return {
-              "width": "250px",
-              "height": " 125px",
-              "border-radius": "10px",
-              "border": "0px",
-              "margin": "5px",
-              "text-shadow": "0px 0px 10px #000000",
-              "color": "#FFFFFF",
-              "background-color": "#77567F"
-            }
-          }
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              let canAfford = new Decimal(0);
+          
+              if (player[this.layer].points.gte(this.cost())) {
+                  // Check if player can buy 1 item
+                  canAfford = new Decimal(1);
+          
+                  // Check if player can afford 2 items and not exceed the limit
+                  if (player[this.layer].points.gte(this.nextCost) &&
+                      hasAchievement('A', 45) &&
+                      currentAmount.lt(this.purchaseLimit.sub(1))) {
+                      canAfford = canAfford.add(1);
+                  }
+              }
+          
+              return canAfford;
           },
-            buy() {
-              player[this.layer].points = player[this.layer].points.sub(this.cost())
-              setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-            },
+            style() {
+                  if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+                    return {
+                      "width": "250px",
+                      "height": " 125px",
+                      "border-radius": "10px",
+                      "border": "0px",
+                      "margin": "5px",
+                      "text-shadow": "0px 0px 10px #000000",
+                      "color": "#FFFFFF",
+                      "background-color": "#6A3076"}
+                    } else{
+                  if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#5941A9"}
+                  if (this.canAfford().lt(1)) return {
+                    "pointer-events": "none",
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#77567F"
+                  }
+                }
+                },
+                buy() {
+                  let currentAmount = getBuyableAmount(this.layer, this.id);
+                  let afford = this.canAfford();
+              
+                  if (afford.eq(1)) {
+                      player[this.layer].points = player[this.layer].points.sub(this.cost());
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+                  } else if (afford.eq(2)) {
+                      player[this.layer].points = player[this.layer].points.sub(this.nextCost);
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+                  }
+              },
             effect(x) {
               if (hasUpgrade('w',42)) {
               let PowerI = new Decimal(2)
@@ -2171,12 +2371,12 @@ addLayer("m", {
                 return `Makes your super upgrades 3 wins cheaper.<br>
               ${format(tmp[this.layer].buyables[this.id].effect)} Wins Cheaper</b><br>
           <h2>Maximum Amount Reached</h2>
-          <br> ${format(getBuyableAmount('m',21))} /3 Bought`
+          <br> ${format(getBuyableAmount('m',21))} / 3 Bought`
               } else {
                 return `Makes your super upgrades 3 wins cheaper.<br>
               ${format(tmp[this.layer].buyables[this.id].effect)} Wins Cheaper</b><br>
           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-          <br> ${format(getBuyableAmount('m',21))} /3 Bought`
+          <br> ${format(getBuyableAmount('m',21))} / 3 Bought`
               }
               
             },
@@ -2230,63 +2430,103 @@ addLayer("m", {
             }
           },
           22: {
-            purchaseLimit: 100,
+            purchaseLimit: new Decimal(100),
             title: "Shard of the Void",
+            nextCost: null,
             cost() {
-              let Calculation = new Decimal("e15")
-              let x = new Decimal(getBuyableAmount(this.layer, this.id))
-              let y = new Decimal("1e15")
-              Calculation = Calculation.mul(y.pow(x))
-              
-              if (getBuyableAmount('m',61) > 0) {
-                Calculation = Calculation.divide(buyableEffect('m',61))
-                return Calculation
-              } else {
-                return Calculation 
+              let Calculation = new Decimal("e15");
+              let x = new Decimal(getBuyableAmount(this.layer, this.id));
+              let y = new Decimal("1e15");
+              Calculation = Calculation.mul(y.pow(x));
+              let nextCalculation = Calculation.mul(y);
+          
+              if (getBuyableAmount('m', 61).gt(0)) {
+                Calculation = Calculation.divide(buyableEffect('m', 61));
+                nextCalculation = nextCalculation.divide(buyableEffect('m', 61));
               }
-          },
+          
+              this.nextCost = nextCalculation; // Store the next cost
+              return Calculation;
+            },          
             display() {
               if (getBuyableAmount(this.layer,this.id) >= 100) {
                 return `Wins provide a boost to the point production.<br>
               x${format(tmp[this.layer].buyables[this.id].effect)} to Point Production</b><br>
           <h2>Maximum Amount Reached</h2>
-          <br> ${format(getBuyableAmount('m',22))} /100 Bought`
+          <br> ${format(getBuyableAmount('m',22))} / 100 Bought`
               } else {
                 return `Wins provide a boost to the point production.<br>
               x${format(tmp[this.layer].buyables[this.id].effect)} to Point Production</b><br>
           <h2>${format(tmp[this.layer].buyables[this.id].cost)} Magical Shards</h2>
-          <br> ${format(getBuyableAmount('m',22))} /100 Bought`
+          <br> ${format(getBuyableAmount('m',22))} / 100 Bought`
               }
               
             },
+            
             canAfford() {
-              return player.m.points.gte(this.cost())
-            },
-            style() {
-              if (this.canAfford()||getBuyableAmount("m",22) >= 100) return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#5941A9"}
-              if (!this.canAfford()) return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#77567F"
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              let canAfford = new Decimal(0);
+          
+              if (player[this.layer].points.gte(this.cost())) {
+                  // Check if player can buy 1 item
+                  canAfford = new Decimal(1);
+          
+                  // Check if player can afford 2 items and not exceed the limit
+                  if (player[this.layer].points.gte(this.nextCost) &&
+                      hasAchievement('A', 45) &&
+                      currentAmount.lt(this.purchaseLimit.sub(1))) {
+                      canAfford = canAfford.add(1);
+                  }
               }
-            },
-            buy() {
-              player.m.points = player.m.points.sub(this.cost())
-              setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-            },
+          
+              return canAfford;
+          },
+            style() {
+                  if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+                    return {
+                      "width": "250px",
+                      "height": " 125px",
+                      "border-radius": "10px",
+                      "border": "0px",
+                      "margin": "5px",
+                      "text-shadow": "0px 0px 10px #000000",
+                      "color": "#FFFFFF",
+                      "background-color": "#6A3076"}
+                    } else{
+                  if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#5941A9"}
+                  if (this.canAfford().lt(1)) return {
+                    "pointer-events": "none",
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#77567F"
+                  }
+                }
+                },
+                buy() {
+                  let currentAmount = getBuyableAmount(this.layer, this.id);
+                  let afford = this.canAfford();
+              
+                  if (afford.eq(1)) {
+                      player[this.layer].points = player[this.layer].points.sub(this.cost());
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+                  } else if (afford.eq(2)) {
+                      player[this.layer].points = player[this.layer].points.sub(this.nextCost);
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+                  }
+              },
             effect(x) {
               let Effect = new Decimal(1).add(Math.log(player.w.points + 10)*(Math.pow(1.5,x)))
               return Effect;
@@ -2301,70 +2541,81 @@ addLayer("m", {
             }
           },
           61: {
-            purchaseLimit: new Decimal(999999),
+            purchaseLimit: new Decimal(200),
             title: "'Point'less Shard",
+            nextCost: null,
             cost() {
-              let cost = new Decimal("1e12")
-              let scale = new Decimal(100)
-              scale = scale.pow(getBuyableAmount(this.layer, this.id))
-              cost = cost.mul(scale)
+              let cost = new Decimal("1e12");
+              let scale = new Decimal(100);
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              scale = scale.pow(currentAmount);
+              cost = cost.mul(scale);
 
-              if(hasAchievement('A', 21)){
-                cost = cost.div(10)
+              if (hasAchievement('A', 21)) {
+                cost = cost.div(10);
               }
-              if (challengeCompletions(this.layer,31) > 0) {
-                cost = cost.divide(challengeEffect(this.layer, 31))
-                return cost
-              } else {
-                return cost
+              if (challengeCompletions(this.layer, 31) > 0) {
+                cost = cost.divide(challengeEffect(this.layer, 31));
               }
-              
+
+              // Calculate the next cost
+              let nextCost = new Decimal("1e12");
+              let nextScale = new Decimal(100);
+              nextScale = nextScale.pow(currentAmount.add(1));
+              nextCost = nextCost.mul(nextScale);
+
+              if (hasAchievement('A', 21)) {
+                nextCost = nextCost.div(10);
+              }
+              if (challengeCompletions(this.layer, 31) > 0) {
+                nextCost = nextCost.divide(challengeEffect(this.layer, 31));
+              }
+
+              this.nextCost = nextCost; // Store the next cost
+              return cost;
             },
             display() {
               if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit) ) {
-                return `Makes your super upgrades 3 wins cheaper.<br>
-                x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper</b><br>
-                <h2>Maximum Amount Reached</h2>
-                <br> ${getBuyableAmount(this.layer, this.id)} / 200 Bought`
+                return `Makes items that cost magical shard ${format(this.effect().root(getBuyableAmount(this.layer, this.id)))}x cheaper.<br>
+                      x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
+                      <h2>Maximum Amount Reached</h2>
+                      <br> ${format(getBuyableAmount(this.layer, this.id))} / 200 Bought`
               }
               else {
                 if (hasUpgrade('h', 12)) {
                   return `Makes items that cost magical shard ${format(this.effect().root(getBuyableAmount(this.layer, this.id)))}x cheaper.<br>
                       x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
                       <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                      <br> ${getBuyableAmount('m',61)} /200 Bought`
+                      <br> ${format(getBuyableAmount(this.layer, this.id))} / 200 Bought`
                     }
                 else {
                   if (hasAchievement('A', 24)) {
                     return `Makes items that cost magical shard 1.3x cheaper.<br>
                       x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
                       <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                      <br> ${getBuyableAmount('m',61)} / 200 Bought`
+                      <br> ${format(getBuyableAmount(this.layer, this.id))} / 200 Bought`
                     }
                     else return `Makes items that cost magical shard 1.1x cheaper.<br>
                       x${format(tmp[this.layer].buyables[this.id].effect)} Cheaper </b><br>
                       <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                      <br> ${getBuyableAmount('m',61)} / 200 Bought`
+                      <br> ${format(getBuyableAmount(this.layer, this.id))} / 200 Bought`
                   }
               }
               
               },
-            canAfford() {
-              return player.points.gte(this.cost())
-            },
-            style() {
-              if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
-                return {
-                  "width": "250px",
-                  "height": " 125px",
-                  "border-radius": "10px",
-                  "border": "0px",
-                  "margin": "5px",
-                  "text-shadow": "0px 0px 10px #000000",
-                  "color": "#FFFFFF",
-                  "background-color": "#6A3076"}
-              } else {
-                if (this.canAfford()||getBuyableAmount("m",21).eq(this.purchaseLimit)) return {
+              style() {
+                if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+                  return {
+                    "width": "250px",
+                    "height": " 125px",
+                    "border-radius": "10px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#6A3076"}
+                  } else{
+                if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
                   "width": "250px",
                   "height": " 125px",
                   "border-radius": "10px",
@@ -2373,7 +2624,8 @@ addLayer("m", {
                   "text-shadow": "0px 0px 10px #000000",
                   "color": "#FFFFFF",
                   "background-color": "#5941A9"}
-                if (!this.canAfford()) return {
+                if (this.canAfford().lt(1)) return {
+                  "pointer-events": "none",
                   "width": "250px",
                   "height": " 125px",
                   "border-radius": "10px",
@@ -2385,10 +2637,35 @@ addLayer("m", {
                 }
               }
               },
-            buy() {
-              player.points = player.points.sub(this.cost())
-              setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-            },
+                canAfford() {
+                  let currentAmount = getBuyableAmount(this.layer, this.id);
+                  let canAfford = new Decimal(0);
+              
+                  if (player.points.gte(this.cost())) {
+                      // Check if player can buy 1 item
+                      canAfford = new Decimal(1);
+              
+                      // Check if player can afford 2 items and not exceed the limit
+                      if (player.points.gte(this.nextCost) &&
+                          hasAchievement('A', 45) &&
+                          currentAmount.lt(this.purchaseLimit.sub(1))) {
+                          canAfford = canAfford.add(1);
+                      }
+                  }
+                  return canAfford;
+                },
+                buy() {
+                  let currentAmount = getBuyableAmount(this.layer, this.id);
+                  let afford = this.canAfford();
+              
+                  if (afford.eq(1)) {
+                      player.points = player.points.sub(this.cost());
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+                  } else if (afford.eq(2)) {
+                      player.points = player.points.sub(this.nextCost);
+                      setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+                  }
+                },
             effect(x) {
               let Effect = new Decimal(1.1)
               if (hasAchievement('A', 24)) Effect = new Decimal(1.3)
@@ -2403,43 +2680,51 @@ addLayer("m", {
             }
           },
           62: {
-            purchaseLimit: new Decimal(999999),
+            purchaseLimit: new Decimal(200),
             title: "? Shard",
             cost() {
-              let cost = new Decimal("1e12")
-              let scale = new Decimal(160)
-              scale = scale.pow(getBuyableAmount(this.layer, this.id))
-              cost = cost.mul(scale)
-              if (challengeCompletions(this.layer,31) > 0) {
-                cost = cost.divide(challengeEffect(this.layer, 31))
-                return cost
-              } else {
-                return cost
+              let cost = new Decimal("1e12");
+              let scale = new Decimal(160);
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              scale = scale.pow(currentAmount);
+              cost = cost.mul(scale);
+          
+              if (challengeCompletions(this.layer, 31) > 0) {
+                cost = cost.divide(challengeEffect(this.layer, 31));
               }
-              
+          
+              // Calculate the next cost
+              let nextCost = new Decimal("1e12");
+              let nextScale = new Decimal(160);
+              nextScale = nextScale.pow(currentAmount.add(1));
+              nextCost = nextCost.mul(nextScale);
+          
+              if (challengeCompletions(this.layer, 31) > 0) {
+                nextCost = nextCost.divide(challengeEffect(this.layer, 31));
+              }
+          
+              this.nextCost = nextCost; // Store the next cost
+              return cost;
             },
             display() {
               if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit) ) {
                 return `Boosts magical shard gain by 2.3x.<br>
                 x${format(tmp[this.layer].buyables[this.id].effect)} to Magical Shard Gain </b><br>
                 <h2>Maximum Amount Reached</h2>
-                <br> ${format(getBuyableAmount('m',62))} /200 Bought`
+                <br> ${format(getBuyableAmount('m',62))} / 200 Bought`
               }
               else {
               if (hasUpgrade('w', 44)) {
                 return `Boosts magical shard gain by 2.3x.<br>
                 x${format(tmp[this.layer].buyables[this.id].effect)} to Magical Shard Gain </b><br>
                 <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                <br> ${format(getBuyableAmount('m',62))} /200 Bought`
+                <br> ${format(getBuyableAmount('m',62))} / 200 Bought`
               }
               else {return `Doubles magical shard gain.<br>
                 x${format(tmp[this.layer].buyables[this.id].effect)} to Magical Shard Gain </b><br>
                 <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-                <br> ${format(getBuyableAmount('m',62))} /200 Bought`
+                <br> ${format(getBuyableAmount('m',62))} / 200 Bought`
             }}},
-            canAfford() {
-              return player.points.gte(this.cost())
-            },
             style() {
               if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
                 return {
@@ -2451,32 +2736,58 @@ addLayer("m", {
                   "text-shadow": "0px 0px 10px #000000",
                   "color": "#FFFFFF",
                   "background-color": "#6A3076"}
-              } else {
-                if (this.canAfford()||getBuyableAmount("m",21).eq(this.purchaseLimit)) return {
-                  "width": "250px",
-                  "height": " 125px",
-                  "border-radius": "10px",
-                  "border": "0px",
-                  "margin": "5px",
-                  "text-shadow": "0px 0px 10px #000000",
-                  "color": "#FFFFFF",
-                  "background-color": "#5941A9"}
-                if (!this.canAfford()) return {
-                  "width": "250px",
-                  "height": " 125px",
-                  "border-radius": "10px",
-                  "border": "0px",
-                  "margin": "5px",
-                  "text-shadow": "0px 0px 10px #000000",
-                  "color": "#FFFFFF",
-                  "background-color": "#77567F"
-                }
+                } else{
+              if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
+                "width": "250px",
+                "height": " 125px",
+                "border-radius": "10px",
+                "border": "0px",
+                "margin": "5px",
+                "text-shadow": "0px 0px 10px #000000",
+                "color": "#FFFFFF",
+                "background-color": "#5941A9"}
+              if (this.canAfford().lt(1)) return {
+                "pointer-events": "none",
+                "width": "250px",
+                "height": " 125px",
+                "border-radius": "10px",
+                "border": "0px",
+                "margin": "5px",
+                "text-shadow": "0px 0px 10px #000000",
+                "color": "#FFFFFF",
+                "background-color": "#77567F"
               }
-              },
-            buy() {
-              player.points = player.points.sub(this.cost())
-              setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            }
             },
+              canAfford() {
+                let currentAmount = getBuyableAmount(this.layer, this.id);
+                let canAfford = new Decimal(0);
+            
+                if (player.points.gte(this.cost())) {
+                    // Check if player can buy 1 item
+                    canAfford = new Decimal(1);
+            
+                    // Check if player can afford 2 items and not exceed the limit
+                    if (player.points.gte(this.nextCost) &&
+                        hasAchievement('A', 45) &&
+                        currentAmount.lt(this.purchaseLimit.sub(1))) {
+                        canAfford = canAfford.add(1);
+                    }
+                }
+                return canAfford;
+              },
+              buy() {
+                let currentAmount = getBuyableAmount(this.layer, this.id);
+                let afford = this.canAfford();
+            
+                if (afford.eq(1)) {
+                    player.points = player.points.sub(this.cost());
+                    setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+                } else if (afford.eq(2)) {
+                    player.points = player.points.sub(this.nextCost);
+                    setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+                }
+              },
             effect(x) {
               let Effect = new Decimal(2)
               if(hasUpgrade('w', 44)) {
@@ -2490,50 +2801,106 @@ addLayer("m", {
             }
           },
           63: {
-            purchaseLimit: 25,
+            purchaseLimit: new Decimal(25),
             title: "Angelic Shard",
+            nextCost: null,
             cost(x) {
-              let basecost = new Decimal("1e15")
-              let scale = new Decimal("1e50")
-              scale = scale.pow(x)
-              basecost = basecost.mul(scale)
-              x = new Decimal(challengeCompletions('m',33))
-              if(hasChallenge('m',33)) basecost=basecost.div(x.mul("1e30").pow(x.add(1)))
-              return basecost
+              let basecost = new Decimal("1e15");
+              let scale = new Decimal("1e50");
+              scale = scale.pow(x);
+              basecost = basecost.mul(scale);
+
+              let nextX = x.add(1); // Calculate next x for next cost
+              let nextBasecost = new Decimal("1e15");
+              let nextScale = new Decimal("1e50");
+              nextScale = nextScale.pow(nextX);
+              nextBasecost = nextBasecost.mul(nextScale);
+
+              if (hasChallenge('m', 33)) {
+                let challengeFactor = new Decimal(challengeCompletions('m', 33));
+                basecost = basecost.div(challengeFactor.mul("1e30").pow(x.add(1)));
+                nextBasecost = nextBasecost.div(challengeFactor.mul("1e30").pow(nextX));
+              }
+
+              this.nextCost = nextBasecost; // Store the next cost
+              return basecost;
             },
             display() {
-              return `Strengthens super divisor based on how many heavenly milestones you have.<br>
+              if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+                return `Strengthens super divisor based on how many heavenly milestones you have.<br>
               x${format(tmp[this.layer].buyables[this.id].effect)} Super Divisor Power</b><br>
-          <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
-          <br> ${format(getBuyableAmount('m',63))} /25 Bought`
-            },
+              <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
+              <br> ${format(getBuyableAmount('m',63))} / 25 Bought`
+              } else {
+                return `Strengthens super divisor based on how many heavenly milestones you have.<br>
+              x${format(tmp[this.layer].buyables[this.id].effect)} Super Divisor Power</b><br>
+              <h1>${format(tmp[this.layer].buyables[this.id].cost)} Points</h1>
+              <br> ${format(getBuyableAmount('m',63))} / 25 Bought`
+              
+            }
+           },
+           style() {
+            if (getBuyableAmount(this.layer,this.id).eq(this.purchaseLimit)) {
+              return {
+                "width": "250px",
+                "height": " 125px",
+                "border-radius": "10px",
+                "border": "0px",
+                "margin": "5px",
+                "text-shadow": "0px 0px 10px #000000",
+                "color": "#FFFFFF",
+                "background-color": "#6A3076"}
+              } else{
+            if (this.canAfford().gte(1)||getBuyableAmount("m",12).eq(this.purchaseLimit)) return {
+              "width": "250px",
+              "height": " 125px",
+              "border-radius": "10px",
+              "border": "0px",
+              "margin": "5px",
+              "text-shadow": "0px 0px 10px #000000",
+              "color": "#FFFFFF",
+              "background-color": "#5941A9"}
+            if (this.canAfford().lt(1)) return {
+              "pointer-events": "none",
+              "width": "250px",
+              "height": " 125px",
+              "border-radius": "10px",
+              "border": "0px",
+              "margin": "5px",
+              "text-shadow": "0px 0px 10px #000000",
+              "color": "#FFFFFF",
+              "background-color": "#77567F"
+            }
+          }
+          },
             canAfford() {
-              return player.points.gte(this.cost())
-            },
-            style() {
-              if (this.canAfford()||getBuyableAmount("m",63) == this.purchaseLimit) return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#5941A9"}
-              if (!this.canAfford()) return {
-                "width": "250px",
-                "height": " 125px",
-                "border-radius": "10px",
-                "border": "0px",
-                "margin": "5px",
-                "text-shadow": "0px 0px 10px #000000",
-                "color": "#FFFFFF",
-                "background-color": "#77567F"
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              let canAfford = new Decimal(0);
+          
+              if (player.points.gte(this.cost())) {
+                  // Check if player can buy 1 item
+                  canAfford = new Decimal(1);
+          
+                  // Check if player can afford 2 items and not exceed the limit
+                  if (player.points.gte(this.nextCost) &&
+                      hasAchievement('A', 45) &&
+                      currentAmount.lt(this.purchaseLimit.sub(1))) {
+                      canAfford = canAfford.add(1);
+                  }
               }
+              return canAfford;
             },
             buy() {
-              player.points = player.points.sub(this.cost())
-              setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              let currentAmount = getBuyableAmount(this.layer, this.id);
+              let afford = this.canAfford();
+          
+              if (afford.eq(1)) {
+                  player.points = player.points.sub(this.cost());
+                  setBuyableAmount(this.layer, this.id, currentAmount.add(1));
+              } else if (afford.eq(2)) {
+                  player.points = player.points.sub(this.nextCost);
+                  setBuyableAmount(this.layer, this.id, currentAmount.add(2));
+              }
             },
             effect(x) {
               let Effect = new Decimal(3)
@@ -2573,7 +2940,7 @@ addLayer("h", {
       unlocked: false,
       total: true,
       auto(){
-        if (hasMilestone('h',5)) return true
+        if (hasMilestone('h',4)) return true
         else return false
       },
     points: new Decimal(0),
@@ -2635,16 +3002,16 @@ addLayer("h", {
     }}, 
     automate(){const now = Date.now();
       let delay = 500;
-      if(hasAchievement('A',42)) {delay = 100}
+      if(hasAchievement('A',42)) {delay = 50}
   
       if (now - lastAutomateTime >= delay) {
-          if (player.h.auto && hasMilestone(this.layer, 4)) {
-              if (canBuyBuyable('m', 11)) { buyBuyable('m', 11); }
-              if (canBuyBuyable('m', 12)) { buyBuyable('m', 12); }
-              if (canBuyBuyable('m', 22)) { buyBuyable('m', 22); }
-              if (canBuyBuyable('m', 61)) { buyBuyable('m', 61); }
-              if (canBuyBuyable('m', 62)) { buyBuyable('m', 62); }
-              if (canBuyBuyable('m', 63)) { buyBuyable('m', 63); }
+          if (autoitembuy == true && hasMilestone(this.layer, 4)) {
+            if (canBuyBuyable('m', 11)) { buyBuyable('m', 11); }
+            if (canBuyBuyable('m', 12)) { buyBuyable('m', 12); }
+            if (canBuyBuyable('m', 22)) { buyBuyable('m', 22); }
+            if (canBuyBuyable('m', 61)) { buyBuyable('m', 61); }
+            if (canBuyBuyable('m', 62)) { buyBuyable('m', 62); }
+            if (canBuyBuyable('m', 63)) { buyBuyable('m', 63); }
           }
           lastAutomateTime = now;
       }
@@ -2681,7 +3048,7 @@ addLayer("h", {
       "Holy Upgrades":{
         content: [
           ["display-text",
-            function() {return 'You have ' + player.h.points +  ' pure energy.'}
+            function() {return 'You have ' + format(player.h.points) +  ' pure energy.'}
           ],
           "blank",
           ["display-text",
@@ -3139,7 +3506,7 @@ upgrades: {
           },
           31: {
             title: "",
-            description: "Your base point production is boosted by how many milestones you have.",
+            description: "Your base point production is boosted based on how many milestones you have.",
             cost() {
               let cost = new Decimal(150)
               if (hasUpgrade(this.layer, 32) && !hasUpgrade(this.layer,this.id)) cost = cost.add(50)
@@ -3366,6 +3733,78 @@ upgrades: {
                else return false
               }
               },
+              41: {
+                title: "",
+                description: "",
+                cost() {
+                  return new Decimal(500000)
+                },
+                fullDisplay(){
+                  if(hasUpgrade(this.layer,this.id)) {        
+                    return 'Unlock ali'
+                  }
+                  if(!hasUpgrade(this.layer,this.id)) {
+                    return 'Unlock ali<br>' + '<br>Cost: ' + format(this.cost()) + ' Pure Energy'
+                  }
+                },
+                effect() {
+                  let milestones = new Decimal(1)
+                    for (let i = 1; i <= 15; i++) {
+                      if (hasMilestone(this.layer, i)) {
+                          milestones = milestones.add(10);
+                      }
+                  }
+                  return milestones
+                },
+                style() {
+                  if(player.h.points.gte(this.cost()) && !hasUpgrade(this.layer, this.id)) {
+                  return {
+                    "width": "170px",
+                    "height": " 150px",
+                    "border-radius": "35px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "rgb(179, 19, 18)",
+                    "margin-right": "40px",
+                    }
+                  }
+                  if(hasUpgrade(this.layer, this.id)){
+                  return {
+                    "width": "170px",
+                    "height": " 150px",
+                    "border-radius": "35px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background": "linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(74,22,22,1) 35%, rgba(198,25,34,1) 100%)",
+                    "margin-right": "40px",
+                  }
+                  
+                  }
+                  else {
+                    return {
+                    "width": "170px",
+                    "height": " 150px",
+                    "border-radius": "35px",
+                    "border": "0px",
+                    "margin": "5px",
+                    "text-shadow": "0px 0px 10px #000000",
+                    "color": "#FFFFFF",
+                    "background-color": "#bf8f8f" ,
+                    "margin-right": "40px",
+                    }
+                  }
+                },
+                unlocked() {
+                 if (hasUpgrade(this.layer, 31)||hasUpgrade(this.layer, 32)||hasUpgrade(this.layer, 33)) return true
+                 else return false
+                }
+                },
+                
+        
     
   
 },
@@ -3457,10 +3896,11 @@ milestones: {
   },
   4: {
     requirementDescription: "4 Total Pure Energy",
-    effectDescription: "You can automatically buy items.",
+    effectDescription() {
+      if(hasAchievement('A',42)) return "Unlock the item autobuyer which works every 100ms."
+      else return "Unlock the item autobuyer which works every 500ms."
+    },
     done() { return player.h.total.gte(4) },
-    toggles: [["h","auto"]
-    ],
     style(){
     if (hasMilestone(this.layer,this.id)) {
       return {"width": "450px",
