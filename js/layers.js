@@ -1516,7 +1516,7 @@ addLayer("m", {
   }     
   },
   nodeStyle() {
-    if (!this.requires == true) return {
+    if (player.m.unlocked == false) return {
       background: "rgb(191, 143, 143)",
       color: "rgba(0, 0, 0, 0.5)",
       border: "2px solid #008000",
@@ -1524,7 +1524,7 @@ addLayer("m", {
     else return {
     background: "radial-gradient(circle, #7b42f5, #4b0082)",
     'box-shadow': "0 0 15px #7b42f5, 0 0 30px #4b0082",
-    animation: "sparkle 5s infinite",
+    animation: "sparkle 5s infinite"
     }
   },
   clickables: {
@@ -3113,7 +3113,7 @@ addLayer("h", {
       "prestige-button"() { return {'height':'150px','width':'300px',"border-radius":"10px"} }
     },
     nodeStyle() {
-      if (!this.requires == true) return {
+      if (player.h.unlocked == false) return {
         background: "rgb(191, 143, 143)",
         color: "rgba(0, 0, 0, 0.5)",
         border: "2px solid #008000",
