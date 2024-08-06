@@ -20,7 +20,9 @@ let VERSION = {
 let changelog = `<h1>Changelog:</h1><br>
       <br><br>
         <h3>v0.4</h3><br>
-      - Improved QoL. 
+      - Improved QoL.
+      - Improved visuals.
+      - Added infoboxes. 
       <br><br>
         <h3>v0.3</h3><br>
       - Added a new row of achievements.<br>
