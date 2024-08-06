@@ -88,7 +88,7 @@ function challengeEffect(){
     return "<h5>You are currently inside the Placeholder 1. <br> If you win right now, your point production will be multiplied by </h5>" + Effect
   }
   if (inChallenge('m', 31)) {
-    return "<h5>You are currently inside the Endless Void</h5>" + "You have " + player.w.points + " wins and you will have " + player.w.points.add(getResetGain('w')) + " wins on reset"
+    return "<h5>You are currently inside the Endless Void</h5>" + "You have " + format(player.w.points) + " wins and you will have " + format(player.w.points.add(getResetGain('w'))) + " wins on reset"
   }
   else{
     return false
@@ -115,10 +115,10 @@ function getPointGen() {
 	if (hasMilestone('h',1)) gain = gain.mul(2)
   if (hasAchievement('A',32)) gain = gain.mul(calculateAch32Reward())
 	if (hasAchievement('A',33)) {
-	if(inChallenge("m",13) ||inChallenge("m",12) ||inChallenge("m",11) ||inChallenge("m",21) ||inChallenge("m",22) ||inChallenge("m",23) ||inChallenge("m",31)){
+	if(inChallenge("m",13) ||inChallenge("m",12) ||inChallenge("m",11) ||inChallenge("m",21) ||inChallenge("m",22) ||inChallenge("m",23) ||inChallenge("m",31)||inChallenge("m",32)||inChallenge("m",33)){
 		gain = gain.mul(2)}}
 	if (hasAchievement('A',34)) {
-	if(inChallenge("m",13) ||inChallenge("m",12) ||inChallenge("m",11) ||inChallenge("m",21) ||inChallenge("m",22) ||inChallenge("m",23) ||inChallenge("m",31)){
+	if(inChallenge("m",13) ||inChallenge("m",12) ||inChallenge("m",11) ||inChallenge("m",21) ||inChallenge("m",22) ||inChallenge("m",23) ||inChallenge("m",31)||inChallenge("m",32)||inChallenge("m",33)){
 		gain = gain.mul(2)}}
 	if (hasUpgrade('w', 14)) gain = gain.times(upgradeEffect('w',14))
 	if (hasUpgrade('w', 11)) gain = gain.times(upgradeEffect('w',11))
@@ -276,6 +276,7 @@ function nextEndVoidGoal() {
 return calc
   
 }
+
 
 
 

@@ -106,3 +106,23 @@
 .star:after {
 	transform: rotate(35deg);
 }
+
+@keyframes sparkle {
+  0%, 100% { box-shadow: 0 0 15px #7b42f5, 0 0 30px #4b0082; }
+  50% { box-shadow: 0 0 20px #9a7bf5, 0 0 40px #6b0092; }
+}
+
+@keyframes shine {
+  0%, 100% { box-shadow: 0 0 15px #ffd700, 0 0 30px #ff8c00; }
+  50% { box-shadow: 0 0 20px #ffe000, 0 0 40px #ff9c00; }
+}
+
+@keyframes divineGlow {
+  0%, 100% { box-shadow: 0 0 15px #ff4500, 0 0 30px #8b0000; }
+  50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #8b2323; }
+}
+
+@keyframes leafGlow {
+  0%, 100% { box-shadow: 0 0 15px #228b22; }
+  50% { box-shadow: 0 0 25px #32cd32; }
+}
