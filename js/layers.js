@@ -1685,8 +1685,8 @@ addLayer("m", {
       13: {
         name: "Appallment",
         challengeDescription: "Buying an upgrade divides your point production by 100.",
-        canComplete: function() {return player.w.points.gte(560)},
-        goalDescription: "Reach 560 wins to complete the challenge.",
+        canComplete: function() {return player.w.points.gte(660)},
+        goalDescription: "Reach 660 wins to complete the challenge.",
         rewardDescription: "Unlock new upgrades.",
         fullDisplay() {
           return this.challengeDescription + '<br><br><span style="color:grey; text-shadow:2px 2px black">Goal: </span>' + this.goalDescription + '<br><span style="color:gold; text-shadow:2px 2px black">Reward: </span>' + this.rewardDescription
