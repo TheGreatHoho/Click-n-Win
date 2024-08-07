@@ -10,7 +10,7 @@ addLayer("A", {
   layerShown: true,
   type: "none",
   tooltip() {
-    return "Achievements"
+    return "Achievements & Tips"
   },
 
   achievements: {
@@ -410,14 +410,80 @@ addLayer("A", {
       unlocked: false,
     },
 },
+infoboxes: {
+  Welcome: {
+      title: "Welcome to Tips",
+      body() { return "Don't be shamed to come here when you feel stuck!" },
+      
+  },
+  TipDismay: {
+    title: "How do I complete Dismay?",
+    body() { return "Not all challenges have to be completed in order in this game. Check Appallments reward, maybe it could help." },
+    unlocked() { 
+      if(hasAchievement('A', 25)) return true
+    },
+
+  },
+  TipAppallment: {
+    title: "How do I complete Appallment?",
+    body() { return "Maybe it has something to do with divisors? First of all disable auto-buy, afterwards buy the upgrades that gives more than 100x boost to point generation and then wait for points to save up. After saving up about 1e14 points, you can buy divisor and super divisor and complete the challenge." },
+    unlocked() { 
+      if(hasAchievement('A', 25)) return true
+    },
+
+  },
+  TipPlaceholder1: {
+    title: "How do I complete Placeholder 1?",
+    body() { return "Pay attention to the multiplier on the top-left corner of the screen, and try to win when that number is closer to 1." },
+    unlocked() { 
+      if(hasAchievement('A', 35)||hasChallenge('m',13)) return true
+    },
+
+  },
+  TipPlaceholder2: {
+    title: "How do I complete Placeholder 2?",
+    body() { return "First of all, disable auto-buy. Booster gives too much multiplier to point generation therefore you need to buy booster later. Focus on buying other upgrades without having any left over wins. After buying couple of them and finally buying booster, if you have 0 or 1 wins left, you should be able to beat the challenge. " },
+    unlocked() { 
+      if(hasAchievement('A', 35)||hasChallenge('m',13)) return true
+    },
+
+  },
+  TipEndlessVoid: {
+    title: "How do I complete Endless Void?",
+    body() { return "Get as many achievements as possible since they boost point production they should be helpful for Endless Void. Reaching 70 wins in Endless Void will complete the challenge." },
+    unlocked() { 
+      if(hasAchievement('A', 35)||hasChallenge('m',23)) return true
+    },
+
+  },
+  TipPlaceholder4: {
+    title: "How do I complete Placeholder 4?",
+    body() { return "Remember what I said before? The challenges doesn't have to be completed in order. Check the placeholder 5's reward. Angelic shard makes super divisor stronger which is key to completing this challenge. Save up some points, don't buy any upgrade, after saving up enough points buy super divisor and you should be good to go!" },
+    unlocked() { 
+      if(hasAchievement('A', 42)||hasUpgrade('h',21)) return true
+    },
+
+  },
+},
   tabFormat: {
-    "Normal Achievements": {
+    "Achievements": {
         content: [
           ["achievements","12345678"]
 
 
         ],
     },
+    "Tips": {
+      content: [
+        ["infobox",["Welcome"]],
+        ["infobox",["TipDismay"]],
+        ["infobox",["TipAppallment"]],
+        ["infobox",["TipPlaceholder1"]],
+        ["infobox",["TipPlaceholder2"]],
+        ["infobox",["TipEndlessVoid"]],
+        ["infobox",["TipPlaceholder4"]],
+      ]
+    }
     },
   }
 ),
