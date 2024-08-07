@@ -413,12 +413,12 @@ addLayer("A", {
 infoboxes: {
   Welcome: {
       title: "Welcome to Tips",
-      body() { return "Don't be shamed to come here when you feel stuck!" },
+      body() { return "Feel free to come here when you feel stuck!" },
       
   },
   TipDismay: {
     title: "How do I complete Dismay?",
-    body() { return "Not all challenges have to be completed in order in this game. Check Appallments reward, maybe it could help." },
+    body() { return "Not all challenges have to be completed in order in this game. Check Appallment's reward, maybe it could help." },
     unlocked() { 
       if(hasAchievement('A', 25)) return true
     },
