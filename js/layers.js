@@ -189,7 +189,7 @@ addLayer("A", {
     },
     31: {
       name: "Who needs boosters?",
-      tooltip: "Reach 1000 wins without any boosters. <h5>Reward: Endless Void's goal scales slightly weaker. <h5>",
+      tooltip: "Reach 1000 wins without any boosters. <h5>Reward: Endless Void goal scaling is slightly weaker.<br>70+(x.30) => 70+(x.29) <h5>",
       done() {
           if (!hasUpgrade("w",11)){
             if(!hasUpgrade("w",21)) {
@@ -442,7 +442,7 @@ infoboxes: {
   },
   TipPlaceholder2: {
     title: "How do I complete Placeholder 2?",
-    body() { return "First of all, disable auto-buy. Booster gives too much multiplier to point generation therefore you need to buy booster later. Focus on buying other upgrades without having any left over wins. After buying couple of them and finally buying booster, if you have 0 or 1 wins left, you should be able to beat the challenge. " },
+    body() { return "First of all, disable auto-buy. Booster gives too much multiplier to point generation therefore you need to buy booster later. Focus on buying other upgrades without having any left over wins. After buying couple of them and finally buying booster, if you have 0 wins left, you should be able to beat the challenge. " },
     unlocked() { 
       if(hasAchievement('A', 35)||hasChallenge('m',13)) return true
     },
@@ -464,6 +464,7 @@ infoboxes: {
     },
 
   },
+  
 },
   tabFormat: {
     "Achievements": {
@@ -482,6 +483,7 @@ infoboxes: {
         ["infobox",["TipPlaceholder2"]],
         ["infobox",["TipEndlessVoid"]],
         ["infobox",["TipPlaceholder4"]],
+        ["infobox",["TipAch51"]],
       ]
     }
     },
@@ -3097,7 +3099,7 @@ addLayer("h", {
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
       unlocked: false,
-      total: true,
+      total: new Decimal(0),
       auto(){
         if (hasMilestone('h',4)) return true
         else return false
@@ -3985,7 +3987,7 @@ upgrades: {
                   }
                 },
                 unlocked() {
-                 if (hasUpgrade(this.layer, 31)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
+                 if (hasUpgrade(this.layer, 31)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
                  else return false
                 }
   },
@@ -4055,7 +4057,7 @@ upgrades: {
       }
     },
     unlocked() {
-     if (hasUpgrade(this.layer, 32)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
+     if (hasUpgrade(this.layer, 32)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
      else return false
     }
 },
@@ -4125,7 +4127,7 @@ upgrades: {
     }
   },
   unlocked() {
-   if (hasUpgrade(this.layer, 33)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
+   if (hasUpgrade(this.layer, 33)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
    else return false
   }
 }, 
@@ -4991,86 +4993,7 @@ challenges: {
 }
 }
 )
-addLayer("t", {
-  startData() { return {                  
-    unlocked:false,            
-    points: new Decimal(0),  
-    total: new Decimal(0)        
-    }
-    },
-    symbol:"T",
-    color: "#1f522f",            
-    resource: "sacred leaves",
-    row: 3,
-    baseResource: "pure energy",                                 
-    displayRow: 4,         
-    baseAmount() { return player.h.total},  
-    requires() {
-      if (hasMilestone('h',15)) return new Decimal("1e10")
-      else return new Decimal("1e10")
-    },             
-    type: "normal",                         
-    exponent: 0.5,                          
-    gainMult() {                            
-        return new Decimal(1)               
-    },
-    gainExp() {                             
-        return new Decimal(1)
-    },
 
-    nodeStyle() {
-      if (!hasMilestone('h',15)) return {
-        background: "rgb(191, 143, 143)",
-        color: "rgba(0, 0, 0, 0.5)",
-        border: "2px solid #008000",
-      }
-      else return {
-        background: "#006400",
-        color: "#fff",
-        border: "2px solid #008000",
-        'box-shadow': "0 0 15px #228b22",
-        animation: "leafGlow 7s infinite"
-      }
-      
-      
-    },
-    layerShown() {
-      if(hasUpgrade('h',23) && player.t.total.gte(0)) {return true}
-    },
-    tooltip() {
-      return player.t.points + ' sacred leaves'
-    },
-    tooltipLocked(){
-      return "Obtain the 15th heavenly milestone to unlock"
-    },
-    buyables: {
-      11: {
-        cost(x) {
-        let cost = new Decimal("")
-        
-        },
-        display() { return "Blah" },
-        canAfford() { return player[this.layer].points.gte(this.cost()) },
-        buy() {
-            player[this.layer].points = player[this.layer].points.sub(this.cost())
-            setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-        },
-        style() {
-        return {
-            "width": "150px",
-            "height": " 60px",
-            "border-radius": "10px",
-            "border": "0px",
-            "margin": "5px",
-            "text-shadow": "0px 0px 10px #000000",
-            "color": "#FFFFFF",
-            "background-color": "#77567F"
-          }
-        }
-        },
-    },
-    }
-)
 
 
 
