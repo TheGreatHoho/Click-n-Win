@@ -4028,7 +4028,7 @@ upgrades: {
                   }
                 },
                 unlocked() {
-                 if (hasUpgrade(this.layer, 31)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
+                 if (hasUpgrade(this.layer, 31)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
                  else return false
                 }
   },
@@ -4098,7 +4098,7 @@ upgrades: {
       }
     },
     unlocked() {
-     if (hasUpgrade(this.layer, 32)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
+     if (hasUpgrade(this.layer, 32)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
      else return false
     }
 },
@@ -4168,7 +4168,7 @@ upgrades: {
     }
   },
   unlocked() {
-   if (hasUpgrade(this.layer, 33)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return true
+   if (hasUpgrade(this.layer, 33)&&hasAchievement('A',45)&&hasAchievement('A',44)&&hasAchievement('A',43)&&hasAchievement('A',42)&&hasAchievement('A',41)) return false
    else return false
   }
 }, 
