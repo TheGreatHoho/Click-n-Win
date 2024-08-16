@@ -822,8 +822,7 @@ doReset(resettingLayer) {
 
     },
     autoPrestige() {
-      if (isWKeyHeld == true && autowinbutton == false) return true
-      if (isWKeyHeld == false && autowinbutton == true) return true
+      if (isWKeyHeld == true && autowinbutton == true) return true
       else return false
     },
     
