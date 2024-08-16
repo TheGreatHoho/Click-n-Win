@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.4",
+	num: "0.41",
 	name: "This update sucks update"	,
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+      <br><br>
+      <h3>v0.41</h3><br>
+      - Added an auto-win button for mobile users.<br>
       <br><br>
         <h3>v0.4</h3><br>
       - Improved QoL.<br>
@@ -200,25 +203,26 @@ function calculatetimeplayed() {
 		return (player.timePlayed / 3600) + 1	
 	}
 }
-let isWKeyHeld = false;
-let holdInterval = null;
+var isWKeyHeld = false;
+var holdInterval = null;
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'w' || event.key === 'W') {
-        if (!isWKeyHeld) {
-            // If "W" is not currently held, start holding it down
-            isWKeyHeld = true;
+        // Toggle the isWKeyHeld state
+        isWKeyHeld = !isWKeyHeld;
+        if (isWKeyHeld) {
             startHoldingW();
         } else {
-            // If "W" is already being held, stop holding it down
-            isWKeyHeld = false;
             stopHoldingW();
         }
+        // Synchronize with autowinbutton
+        autowinbutton = isWKeyHeld;
+        // Save the state in localStorage to keep it consistent after a refresh
+        localStorage.setItem('isWKeyHeld', isWKeyHeld);
     }
 });
 
 function startHoldingW() {
-
     // Start a repeating action while "W" is held down
     holdInterval = setInterval(() => {
         if (!isWKeyHeld) {
@@ -227,16 +231,65 @@ function startHoldingW() {
             return;
         }
         // Perform action while holding down "W"
-
     }, 1000);
 }
 
 function stopHoldingW() {
-
     // Perform cleanup or final actions
     if (holdInterval) {
         clearInterval(holdInterval);
         holdInterval = null;
+    }
+}
+
+
+var isShiftHeld = false;
+var shiftHoldInterval = null;
+
+// Retrieve the Shift state from localStorage when the page loads
+window.addEventListener('load', () => {
+    const storedShiftState = localStorage.getItem('isShiftHeld');
+    if (storedShiftState === 'true') {
+        isShiftHeld = true;
+        startHoldingShift();
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Shift') {
+        if (!isShiftHeld) {
+            // If "Shift" is not currently held, start holding it down
+            isShiftHeld = true;
+            startHoldingShift();
+        } else {
+            // If "Shift" is already being held, stop holding it down
+            isShiftHeld = false;
+            stopHoldingShift();
+        }
+        // Save the Shift state to localStorage
+        localStorage.setItem('isShiftHeld', isShiftHeld);
+    }
+});
+
+function startHoldingShift() {
+    // Start a repeating action while "Shift" is held down
+    shiftHoldInterval = setInterval(() => {
+        if (!isShiftHeld) {
+            clearInterval(shiftHoldInterval);
+            shiftHoldInterval = null;
+            return;
+        }
+        // Perform action while holding down "Shift"
+        console.log("Holding Shift...");
+
+    }, 1000);
+}
+
+function stopHoldingShift() {
+    // Add any cleanup or actions to perform when stopping the hold
+    if (shiftHoldInterval !== null) {
+        clearInterval(shiftHoldInterval);
+        shiftHoldInterval = null;
     }
 }
 

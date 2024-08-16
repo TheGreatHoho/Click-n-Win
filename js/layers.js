@@ -1,6 +1,7 @@
 let lastAutomateTime = 0;
 let autoitembuy = false;
 let sacrificeclicked = 0;
+let autowinbutton = false;
 addLayer("A", {
   row: "side",
   name: "Achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
@@ -509,11 +510,49 @@ clickables: {
         style() {
           return {
             "width":"100px",
-            "height": " 10px",
+            "height": "10px",
             "border-radius": "20px", 
           }
         },
 
+    },
+    12: {
+      display() {
+        if (isShiftHeld == true) return ""
+        else {
+          if(autowinbutton == false && isWKeyHeld == false) return "Auto-Win is OFF<br>(For mobile users)<br><br><span style='color:grey; font-size:9px' >Press shift to dismiss</span>"
+          if(autowinbutton == true && isWKeyHeld == true) return "Auto-Win is ON<br>(For mobile users)<br><br><span style='color:grey; font-size:9px' >Press shift to dismiss</span>"
+        }
+        
+        },
+        unlocked() {return true},
+        canClick() {return true},
+        onClick() {
+          // Toggle auto-win state when the button is clicked
+          autowinbutton = !autowinbutton;
+          // Synchronize with isWKeyHeld
+          isWKeyHeld = autowinbutton;
+          // Save the state in localStorage to keep it consistent after a refresh
+          localStorage.setItem('isWKeyHeld', isWKeyHeld);
+      },
+      style() {
+          if (!isShiftHeld) {
+              return {
+                  "width": "105px",
+                  "min-height": "90px",
+                  "font-size": "9px",
+                  "box-shadow": "none",
+                  "border-radius": "10px",
+                  "background": "rgb(255, 196, 54)"
+              };
+          } else {
+              return {
+                  "min-width": "0px",
+                  "min-height": "0px",
+                  "background": "none"
+              };
+          }
+      }
     }
 },
 displayRow: 2,
@@ -783,13 +822,14 @@ doReset(resettingLayer) {
 
     },
     autoPrestige() {
-      if (isWKeyHeld == true) return true
+      if (isWKeyHeld == true && autowinbutton == false) return true
+      if (isWKeyHeld == false && autowinbutton == true) return true
       else return false
     },
     
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "w", description: 'W: Win the game!', onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "w", description: 'W: Press to start winning!', onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     infoboxes: {
       Firstbox: {
@@ -820,8 +860,8 @@ doReset(resettingLayer) {
             "blank",
             "main-display",
             ["display-text",
-              function() {if(isWKeyHeld == true) return 'Auto-win is enabled' 
-                else return 'Auto-win is disabled'
+              function() {if(isWKeyHeld == true || autowinbutton == true) return 'Auto-win is enabled (W)' 
+                else return 'Auto-win is disabled (W)'
               },
               { "color": "white", "font-size": "14px"}],
             ["display-text",
@@ -829,6 +869,8 @@ doReset(resettingLayer) {
               { "color": "grey", "font-size": "13px"}],
             "blank",
             "prestige-button",
+            "blank",
+            "clickables",
             "blank",
             ["toggle",
               function() {if(hasMilestone(this.layer,3)) return ["w","auto"]}],
@@ -1459,8 +1501,9 @@ doReset(resettingLayer) {
         
         
     },
-   
+    
 })
+  
 
 addLayer("m", {
   infoboxes: {
@@ -1614,7 +1657,6 @@ addLayer("m", {
             "width":"100px",
             "min-height": " 40px",
             "font-size": "11px",
-            "color": "#908e91",
             "text-shadow": "2px 2px black",
             "box-shadow": "none",
             "border-radius": "20px", 
